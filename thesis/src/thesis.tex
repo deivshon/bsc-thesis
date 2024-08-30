@@ -1,0 +1,102 @@
+\documentclass[12pt,a4paper,twoside]{book}
+
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,inner=3.5cm,outer=2.5cm]{geometry}
+
+\usepackage[titletoc,title,toc,page]{appendix}
+\usepackage{verbatim}
+\usepackage{placeins}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage[backend=bibtex,style=numeric]{biblatex}
+% \addbibresource{bibliografy.bib}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\usepackage{amsmath}
+\usepackage{minted}
+
+\usepackage{graphicx}
+\usepackage{blindtext}
+\usepackage{chngcntr}
+
+\usepackage{newlfont}
+\usepackage{fancyhdr}
+\usepackage{indentfirst}
+\usepackage[utf8]{inputenc}
+\usepackage{float}
+\usepackage[capitalize,noabbrev]{cleveref}
+\usepackage{soul}
+\usepackage[font=footnotesize,labelfont=bf]{caption}
+
+\usepackage{multirow}
+
+\usepackage{lscape} 
+
+\usepackage{setspace}
+
+% For better chapter titles
+\usepackage[raggedright]{titlesec}
+\titleformat{\chapter}[hang]
+    {\normalfont\huge\bfseries} % format
+    {\thechapter}               % label
+    {1em}                       % sep
+    {}                          % before-code
+
+\titlespacing*{\section}{0pt}{1\baselineskip}{0\baselineskip}
+\titlespacing*{\subsection}{0pt}{0.8\baselineskip}{0\baselineskip}
+\titlespacing*{\subsubsection}{0pt}{0.6\baselineskip}{0\baselineskip}
+
+% Substitute unicode character not rendered by default by latex
+\DeclareUnicodeCharacter{2009}{ }
+\DeclareUnicodeCharacter{2264}{$\leq$}
+
+% If you want to use ducks as page numbering
+\usepackage{tikzducks}
+
+\newcommand{\rom}[1]{\uppercase\expandafter{\romannumeral #1\relax}}
+
+\begin{document}
+
+\pagestyle{empty}
+\newgeometry{left=2cm, right=2cm}
+\input{sections/frontispiece}
+\restoregeometry
+\topmargin=-1cm
+\onehalfspacing
+
+% Spacing and indent when changing paragraphs
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+
+\newpage~\newpage
+\pagenumbering{gobble}
+\input{sections/dedication.tex}
+
+\newpage~\newpage
+\pagenumbering{gobble}
+\input{sections/abstract}
+
+\newpage~\newpage
+
+% Spacing and indent when changing paragraphs
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+\topmargin=-1cm
+\setcounter{tocdepth}{2}
+\tableofcontents
+\cleardoublepage
+
+\pagenumbering{arabic}
+\setcounter{chapter}{0}
+\raggedbottom
+
+% Spacing and indent when changing paragraphs
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{11pt}
+
+\input{sections/introduction}
+
+
+\printbibliography
+\end{document}
