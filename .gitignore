@@ -304,3 +304,9 @@ node_modules
 dist
 dist-ssr
 *.local
+
+# better-sqlite3 can't find the .node file otheriwse
+elm/*/be/Release
+
+# --- SQLite
+*sqlite[0-9]
