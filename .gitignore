@@ -284,7 +284,23 @@ TSWLatexianTemp*
 # Makeindex log files
 *.lpz
 
-# slides.pdf and thesis.pdf
-slides.pdf
-thesis.pdf
-duck-thesis.pdf
+
+# Artifacts
+*.pdf
+
+
+# --- TypeScript
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local

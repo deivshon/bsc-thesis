@@ -1,3 +1,9 @@
 {
-  "latex-workshop.latex.autoBuild.run": "never"
+    "editor.tabSize": 4,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "always"
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "latex-workshop.latex.autoBuild.run": "never"
 }
