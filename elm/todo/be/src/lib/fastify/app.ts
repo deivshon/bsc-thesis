@@ -1,3 +1,4 @@
+import FastifyCors from "@fastify/cors";
 import Fastify, { FastifyReply } from "fastify";
 
 export const apiError = <T extends NonNullable<object>>(
@@ -22,4 +23,10 @@ export const apiError = <T extends NonNullable<object>>(
 
 export const fastifyApp = Fastify({
     logger: true,
+});
+
+fastifyApp.register(FastifyCors, {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
 });
