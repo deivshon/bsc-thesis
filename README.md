@@ -17,6 +17,8 @@ VS Code LaTeX extension (`James-Yu.latex-workshop`) related packages
 Dev related packages
 
 ```
-# pacman -S --needed pnpm coreutils make util-linux
+# pacman -S --needed pnpm coreutils make util-linux python expect sed bash
 $ yay -S --needed nvm
 ```
+
+The `elm` binary is also going to be needed, it can be installed following the instructions [here](https://github.com/elm/compiler/tree/master/installers)

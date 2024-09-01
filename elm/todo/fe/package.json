@@ -1,0 +1,12 @@
+{
+    "name": "todo-fe",
+    "version": "1.0.0",
+    "scripts": {
+        "minify-css": "postcss --config ./postcss.config.js ../../shared/css/preflight.css > ./dist/preflight.min.css"
+    },
+    "devDependencies": {
+        "cssnano": "^7.0.5",
+        "postcss": "^8.4.42",
+        "postcss-cli": "^11.0.0"
+    }
+}
