@@ -10,3 +10,16 @@ getTodos toMsg =
         { url = "http://localhost:3000/todos"
         , expect = Http.expectJson toMsg Todo.todoListDecoder
         }
+
+
+updateTodoDoneStatus : String -> Todo.TodoDoneUpdate -> (Result Http.Error () -> msg) -> Cmd msg
+updateTodoDoneStatus id todoDoneUpdate toMsg =
+    Http.request
+        { method = "PATCH"
+        , headers = []
+        , url = "http://localhost:3000/todos/" ++ id
+        , body = Http.jsonBody (Todo.todoDoneUpdateEncoder todoDoneUpdate)
+        , expect = Http.expectWhatever toMsg
+        , timeout = Nothing
+        , tracker = Nothing
+        }
