@@ -9,9 +9,8 @@ export const createTodoHandler = () => {
             return apiError("Invalid body", 400, reply, parsedBody);
         }
 
-        await todoStorage.create(parsedBody.data);
+        const newTodo = await todoStorage.create(parsedBody.data);
 
-        reply.code(201);
-        return;
+        return newTodo;
     });
 };

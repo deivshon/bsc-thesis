@@ -44,20 +44,21 @@ class TodoStorage {
             .execute();
     }
 
-    public create = async (todo: TodoCreate): Promise<void> => {
+    public create = async (todo: TodoCreate): Promise<Todo> => {
         const id = crypto.randomUUID();
         const now = Date.now();
 
-        await db
-            .insertInto("todos")
-            .values({
-                id,
-                content: todo.content,
-                createdAt: now,
-                updatedAt: now,
-                done: 0,
-            })
-            .execute();
+        const newTodoModel = {
+            id,
+            content: todo.content,
+            createdAt: now,
+            updatedAt: now,
+            done: 0,
+        };
+
+        await db.insertInto("todos").values(newTodoModel).execute();
+
+        return this.toTodo(newTodoModel);
     };
 
     public readAll = async (): Promise<Todo[]> => {

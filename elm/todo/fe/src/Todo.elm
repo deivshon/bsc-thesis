@@ -21,6 +21,11 @@ type alias TodoDoneUpdate =
     }
 
 
+type alias NewTodo =
+    { content : String
+    }
+
+
 todoDecoder : Decoder Todo
 todoDecoder =
     map5 Todo
@@ -29,6 +34,12 @@ todoDecoder =
         (field "createdAt" int)
         (field "updatedAt" int)
         (field "done" bool)
+
+
+newTodoEncoder : NewTodo -> Json.Encode.Value
+newTodoEncoder newTodo =
+    Json.Encode.object
+        [ ( "content", Json.Encode.string newTodo.content ) ]
 
 
 todoListDecoder : Decoder (List Todo)
@@ -52,12 +63,15 @@ undoneTodos todos =
     List.filter (\todo -> not todo.done) todos
 
 
-viewTodo : { a | done : Bool, content : String } -> msg -> msg -> H.Html msg
-viewTodo todo onTodoDone onTodoUndone =
-    if todo.done then
-        H.div [ class "todo done", onClick onTodoUndone ]
-            [ H.text todo.content, H.button [ class "mark-undone-button" ] [ H.text "Mark udone" ] ]
+viewTodo : { a | done : Bool, content : String } -> (Bool -> msg) -> msg -> H.Html msg
+viewTodo todo onTodoStatusChange onDelete =
+    H.div []
+        [ if todo.done then
+            H.div [ class "todo done", onClick (onTodoStatusChange False) ]
+                [ H.text todo.content, H.button [ class "mark-undone-button" ] [ H.text "Mark udone" ] ]
 
-    else
-        H.div [ class "todo undone", onClick onTodoDone ]
-            [ H.text todo.content, H.button [ class "mark-done-button" ] [ H.text "Mark done" ] ]
+          else
+            H.div [ class "todo undone", onClick (onTodoStatusChange True) ]
+                [ H.text todo.content, H.button [ class "mark-done-button" ] [ H.text "Mark done" ] ]
+        , H.button [ class "delete-button", onClick onDelete ] [ H.text "Delete" ]
+        ]

@@ -23,3 +23,25 @@ updateTodoDoneStatus id todoDoneUpdate toMsg =
         , timeout = Nothing
         , tracker = Nothing
         }
+
+
+createTodo : Todo.NewTodo -> (Result Http.Error Todo.Todo -> msg) -> Cmd msg
+createTodo content toMsg =
+    Http.post
+        { url = "http://localhost:3000/todos"
+        , body = Http.jsonBody (Todo.newTodoEncoder content)
+        , expect = Http.expectJson toMsg Todo.todoDecoder
+        }
+
+
+deleteTodo : String -> (Result Http.Error () -> msg) -> Cmd msg
+deleteTodo id toMsg =
+    Http.request
+        { method = "DELETE"
+        , headers = []
+        , url = "http://localhost:3000/todos/" ++ id
+        , body = Http.emptyBody
+        , expect = Http.expectWhatever toMsg
+        , timeout = Nothing
+        , tracker = Nothing
+        }
