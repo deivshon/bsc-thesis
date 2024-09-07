@@ -1,12 +1,12 @@
-module Main exposing (main)
+module Main exposing (..)
 
-import Api exposing (createTodo, deleteTodo, getTodos, updateTodoDoneStatus)
+import Api exposing (createTodo, deleteTodo, getTodos, updateTodo)
 import Browser
 import Html as H
 import Html.Attributes exposing (class, placeholder, value)
 import Html.Events exposing (onClick, onInput)
 import Http
-import Todo exposing (Todo, doneTodos, undoneTodos, viewTodo)
+import Todo exposing (Todo, TodoUpdate(..), doneTodos, undoneTodos, viewTodo)
 
 
 type alias EditedTodo =
@@ -37,13 +37,14 @@ type Model
 type Msg
     = TodosLoaded (List Todo)
     | ApiError Http.Error
-    | UpdateDoneStatus String Bool
-    | ReceiveHttpResponse (Result Http.Error ())
+    | UpdateTodo { id : String, update : TodoUpdate }
+    | TodoUpdated (Result Http.Error ())
     | UpdateEditedTodoContent String
     | CreateTodo String
     | TodoCreated (Result Http.Error Todo)
     | DeleteTodo String
     | TodoDeleted (Result Http.Error ())
+    | EditTodo Todo
 
 
 toMsg : Result Http.Error (List Todo) -> Msg
@@ -98,38 +99,30 @@ update msg model =
         ApiError error ->
             ( Error error, Cmd.none )
 
-        UpdateDoneStatus id done ->
+        UpdateTodo todoUpdate ->
             case model of
                 Loaded state ->
-                    let
-                        updatedTodos =
-                            List.map
-                                (\todo ->
-                                    if todo.id == id then
-                                        { todo | done = done }
+                    case todoUpdate.update of
+                        StatusUpdate done ->
+                            ( Loaded state
+                            , updateTodo todoUpdate.id { done = Just done, content = Nothing } TodoUpdated
+                            )
 
-                                    else
-                                        todo
-                                )
-                                state.todos
-                    in
-                    ( Loaded { state | todos = updatedTodos }, updateTodoDoneStatus id { done = done } ReceiveHttpResponse )
+                        ContentUpdate content ->
+                            ( Loaded { state | editedTodo = defaultEditedTodo }
+                            , updateTodo todoUpdate.id { done = Nothing, content = Just content } TodoUpdated
+                            )
 
                 _ ->
                     ( model, Cmd.none )
 
-        ReceiveHttpResponse res ->
-            case res of
-                Ok _ ->
-                    ( model, Cmd.none )
-
-                Err error ->
-                    ( Error error, Cmd.none )
+        TodoUpdated res ->
+            handleTodoChangingResponse res model
 
         UpdateEditedTodoContent content ->
             case model of
                 Loaded state ->
-                    ( Loaded { state | editedTodo = { id = Nothing, content = content } }, Cmd.none )
+                    ( Loaded { state | editedTodo = { id = state.editedTodo.id, content = content } }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -155,6 +148,14 @@ update msg model =
 
         TodoDeleted response ->
             handleTodoChangingResponse response model
+
+        EditTodo todo ->
+            case model of
+                Loaded state ->
+                    ( Loaded { state | editedTodo = { id = Just todo.id, content = todo.content } }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 view : Model -> H.Html Msg
@@ -182,15 +183,33 @@ viewLoadedTodos state =
                     List.map
                         (\todo ->
                             viewTodo todo
-                                (UpdateDoneStatus todo.id)
+                                UpdateTodo
                                 (DeleteTodo todo.id)
+                                EditTodo
                         )
                         (undoneTodos state.todos)
                 )
             ]
         , H.div []
             [ H.textarea [ placeholder "Write your todo here...", value state.editedTodo.content, onInput UpdateEditedTodoContent ] []
-            , H.button [ onClick (CreateTodo state.editedTodo.content) ] [ H.text "Create todo" ]
+            , H.button
+                [ onClick
+                    (case state.editedTodo.id of
+                        Nothing ->
+                            CreateTodo state.editedTodo.content
+
+                        Just id ->
+                            UpdateTodo { id = id, update = ContentUpdate state.editedTodo.content }
+                    )
+                ]
+                [ H.text
+                    (if state.editedTodo.id == Nothing then
+                        "Create"
+
+                     else
+                        "Update"
+                    )
+                ]
             ]
         , H.div [ class "todos-container" ]
             [ H.div []
@@ -201,8 +220,9 @@ viewLoadedTodos state =
                     List.map
                         (\todo ->
                             viewTodo todo
-                                (UpdateDoneStatus todo.id)
+                                UpdateTodo
                                 (DeleteTodo todo.id)
+                                EditTodo
                         )
                         (doneTodos state.todos)
                 )

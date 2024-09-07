@@ -16,14 +16,20 @@ type alias Todo =
     }
 
 
-type alias TodoDoneUpdate =
-    { done : Bool
+type alias TodoUpdateBody =
+    { done : Maybe Bool
+    , content : Maybe String
     }
 
 
 type alias NewTodo =
     { content : String
     }
+
+
+type TodoUpdate
+    = StatusUpdate Bool
+    | ContentUpdate String
 
 
 todoDecoder : Decoder Todo
@@ -47,10 +53,48 @@ todoListDecoder =
     Json.Decode.list todoDecoder
 
 
-todoDoneUpdateEncoder : TodoDoneUpdate -> Json.Encode.Value
-todoDoneUpdateEncoder todoDoneUpdate =
-    Json.Encode.object
-        [ ( "done", Json.Encode.bool todoDoneUpdate.done ) ]
+
+-- Ifs needed to avoid sending null values
+
+
+todoUpdateEncoder : TodoUpdateBody -> Json.Encode.Value
+todoUpdateEncoder todoDoneUpdate =
+    if todoDoneUpdate.done == Nothing && todoDoneUpdate.content == Nothing then
+        Json.Encode.object []
+
+    else if todoDoneUpdate.done == Nothing then
+        Json.Encode.object
+            [ ( "content", maybeStringEncoder todoDoneUpdate.content ) ]
+
+    else if todoDoneUpdate.content == Nothing then
+        Json.Encode.object
+            [ ( "done", maybeBoolEncoder todoDoneUpdate.done ) ]
+
+    else
+        Json.Encode.object
+            [ ( "done", maybeBoolEncoder todoDoneUpdate.done )
+            , ( "content", maybeStringEncoder todoDoneUpdate.content )
+            ]
+
+
+maybeBoolEncoder : Maybe Bool -> Json.Encode.Value
+maybeBoolEncoder maybeBool =
+    case maybeBool of
+        Just bool ->
+            Json.Encode.bool bool
+
+        Nothing ->
+            Json.Encode.null
+
+
+maybeStringEncoder : Maybe String -> Json.Encode.Value
+maybeStringEncoder maybeString =
+    case maybeString of
+        Just string ->
+            Json.Encode.string string
+
+        Nothing ->
+            Json.Encode.null
 
 
 doneTodos : List Todo -> List Todo
@@ -63,15 +107,16 @@ undoneTodos todos =
     List.filter (\todo -> not todo.done) todos
 
 
-viewTodo : { a | done : Bool, content : String } -> (Bool -> msg) -> msg -> H.Html msg
-viewTodo todo onTodoStatusChange onDelete =
+viewTodo : { a | done : Bool, id : b, content : String } -> ({ id : b, update : TodoUpdate } -> msg) -> msg -> ({ a | done : Bool, id : b, content : String } -> msg) -> H.Html msg
+viewTodo todo onTodoStatusChange onDelete onEdit =
     H.div []
         [ if todo.done then
-            H.div [ class "todo done", onClick (onTodoStatusChange False) ]
+            H.div [ class "todo done", onClick (onTodoStatusChange { id = todo.id, update = StatusUpdate False }) ]
                 [ H.text todo.content, H.button [ class "mark-undone-button" ] [ H.text "Mark udone" ] ]
 
           else
-            H.div [ class "todo undone", onClick (onTodoStatusChange True) ]
+            H.div [ class "todo undone", onClick (onTodoStatusChange { id = todo.id, update = StatusUpdate True }) ]
                 [ H.text todo.content, H.button [ class "mark-done-button" ] [ H.text "Mark done" ] ]
         , H.button [ class "delete-button", onClick onDelete ] [ H.text "Delete" ]
+        , H.button [ class "edit-button", onClick (onEdit todo) ] [ H.text "Edit" ]
         ]
