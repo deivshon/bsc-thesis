@@ -5,4 +5,6 @@ export const likeDbModelSchema = z.object({
     userId: z.string(),
     createdAt: z.number(),
 });
-export type likeDb = z.infer<typeof likeDbModelSchema>;
+export type LikeDbModel = z.infer<typeof likeDbModelSchema>;
+
+export type Like = LikeDbModel;

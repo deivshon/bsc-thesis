@@ -14,6 +14,7 @@ export const postCreateSchema = postSchema.pick({ content: true });
 export type PostCreate = z.infer<typeof postCreateSchema>;
 
 export const postDbModelSchema = postSchema.pick({
+    id: true,
     content: true,
     userId: true,
     createdAt: true,

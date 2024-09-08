@@ -2,6 +2,7 @@
 
 RED="\033[0;31m"
 GREEN="\033[0;32m"
+YELLOW="\033[0;33m"
 
 RESET="\033[0m"
 
@@ -29,9 +30,15 @@ todoFe() {
     unbuffer python -m http.server --directory ./elm/todo/fe/dist 8000 2>&1 | awk -v color="${GREEN}" -v reset="${RESET}" '{print color "TDF | " $0 reset}'
 }
 
+twitterCloneBe() {
+    cd ./elm/twitter-clone/be || return 1
+    unbuffer node ./dist/index.js 2>&1 | awk -v color="${YELLOW}" -v reset="${RESET}" '{print color "TCB | " $0 reset}'
+}
+
 printf "%s\n" "------------------------ START"
 
 todoBe & pids+=($!)
 todoFe & pids+=($!)
+twitterCloneBe & pids+=($!)
 
 wait
