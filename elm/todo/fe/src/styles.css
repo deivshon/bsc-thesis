@@ -31,3 +31,25 @@ body {
     align-items: center;
     width: 50%;
 }
+
+.todos-loader {
+    position: absolute;
+    width: 3rem;
+    height: 3rem;
+    background-color: white;
+    bottom: 2.5rem;
+    left: 2.5rem;
+}
+
+.rotating {
+    animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

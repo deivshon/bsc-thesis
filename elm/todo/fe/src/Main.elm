@@ -18,6 +18,7 @@ type alias EditedTodo =
 type alias State =
     { todos : List Todo
     , editedTodo : EditedTodo
+    , loading : Int
     }
 
 
@@ -76,7 +77,12 @@ handleTodoChangingResponse : Result Http.Error value -> Model -> ( Model, Cmd Ms
 handleTodoChangingResponse response model =
     case response of
         Ok _ ->
-            ( model, getTodos toMsg )
+            case model of
+                Loaded state ->
+                    ( Loaded state, getTodos toMsg )
+
+                _ ->
+                    ( model, Cmd.none )
 
         Err error ->
             ( Error error, Cmd.none )
@@ -88,10 +94,10 @@ update msg model =
         TodosLoaded todos ->
             case model of
                 FirstLoad ->
-                    ( Loaded { todos = todos, editedTodo = defaultEditedTodo }, Cmd.none )
+                    ( Loaded { todos = todos, editedTodo = defaultEditedTodo, loading = 0 }, Cmd.none )
 
                 Loaded state ->
-                    ( Loaded { todos = todos, editedTodo = state.editedTodo }, Cmd.none )
+                    ( Loaded { todos = todos, editedTodo = state.editedTodo, loading = state.loading - 1 }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -104,12 +110,12 @@ update msg model =
                 Loaded state ->
                     case todoUpdate.update of
                         StatusUpdate done ->
-                            ( Loaded state
+                            ( Loaded { state | loading = state.loading + 1 }
                             , updateTodo todoUpdate.id { done = Just done, content = Nothing } TodoUpdated
                             )
 
                         ContentUpdate content ->
-                            ( Loaded { state | editedTodo = defaultEditedTodo }
+                            ( Loaded { state | editedTodo = defaultEditedTodo, loading = state.loading + 1 }
                             , updateTodo todoUpdate.id { done = Nothing, content = Just content } TodoUpdated
                             )
 
@@ -130,7 +136,7 @@ update msg model =
         CreateTodo content ->
             case model of
                 Loaded state ->
-                    ( Loaded { state | editedTodo = defaultEditedTodo }, createTodo { content = content } TodoCreated )
+                    ( Loaded { state | editedTodo = defaultEditedTodo, loading = state.loading + 1 }, createTodo { content = content } TodoCreated )
 
                 _ ->
                     ( model, Cmd.none )
@@ -140,8 +146,8 @@ update msg model =
 
         DeleteTodo id ->
             case model of
-                Loaded _ ->
-                    ( model, deleteTodo id TodoDeleted )
+                Loaded state ->
+                    ( Loaded { state | loading = state.loading + 1 }, deleteTodo id TodoDeleted )
 
                 _ ->
                     ( model, Cmd.none )
@@ -174,7 +180,17 @@ view model =
 viewLoadedTodos : State -> H.Html Msg
 viewLoadedTodos state =
     H.div [ class "todos-top-container" ]
-        [ H.div [ class "todos-container" ]
+        [ H.div
+            [ class
+                (if state.loading == 0 then
+                    "todos-loader"
+
+                 else
+                    "todos-loader rotating"
+                )
+            ]
+            []
+        , H.div [ class "todos-container" ]
             [ H.div []
                 (if List.isEmpty (undoneTodos state.todos) then
                     [ H.text "No todos to do." ]
