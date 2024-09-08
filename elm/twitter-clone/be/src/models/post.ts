@@ -1,0 +1,22 @@
+import { z } from "zod";
+
+export const postSchema = z.object({
+    id: z.string(),
+    content: z.string(),
+    userId: z.string(),
+    createdAt: z.number(),
+    likes: z.number(),
+    likedbyUser: z.boolean(),
+});
+export type Post = z.infer<typeof postSchema>;
+
+export const postCreateSchema = postSchema.pick({ content: true });
+export type PostCreate = z.infer<typeof postCreateSchema>;
+
+export const postDbModelSchema = postSchema.pick({
+    content: true,
+    userId: true,
+    createdAt: true,
+    likes: true,
+});
+export type PostDbModel = z.infer<typeof postDbModelSchema>;

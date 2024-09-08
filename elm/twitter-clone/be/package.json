@@ -1,0 +1,27 @@
+{
+    "name": "todo",
+    "version": "1.0.0",
+    "description": "",
+    "main": "src/index.ts",
+    "scripts": {
+        "build": "pnpm i && pnpm typecheck && pnpm bundle",
+        "typecheck": "tsc --noEmit",
+        "bundle": "esbuild src/index.ts --bundle --outfile=dist/index.js --format=cjs --minify --platform=node",
+        "clean": "rm -rf dist"
+    },
+    "keywords": [],
+    "author": "",
+    "devDependencies": {
+        "@types/better-sqlite3": "^7.6.11",
+        "@types/node": "^22.5.1",
+        "esbuild": "^0.23.1",
+        "typescript": "^5.5.4"
+    },
+    "dependencies": {
+        "@fastify/cors": "^9.0.1",
+        "better-sqlite3": "^11.2.1",
+        "fastify": "^4.28.1",
+        "kysely": "^0.27.4",
+        "zod": "^3.23.8"
+    }
+}
