@@ -67,14 +67,14 @@ export class PostStorage {
     public readPaginatedPosts = async (
         skip: number,
         limit: number,
-        currentUserId?: string,
+        userId: string,
     ): Promise<Post[]> => {
         const posts = await db
             .selectFrom("posts")
             .leftJoin("likes", (join) =>
                 join
                     .onRef("likes.postId", "=", "posts.id")
-                    .on("likes.userId", "=", currentUserId || null),
+                    .on("likes.userId", "=", userId || null),
             )
             .select([
                 "posts.id",
@@ -110,10 +110,12 @@ export class PostStorage {
         dbModel: PostDbModel & { likedByUser?: number | bigint | string },
         likedByUser: boolean,
     ): Post => {
-        return postSchema.parse({
+        const post = {
             ...dbModel,
             likedByUser,
-        });
+        };
+
+        return postSchema.parse(post);
     };
 }
 

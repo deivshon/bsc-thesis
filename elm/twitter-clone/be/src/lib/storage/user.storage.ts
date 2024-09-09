@@ -1,4 +1,3 @@
-import bcrypt from "bcrypt";
 import { sql } from "kysely";
 import { User, UserCreate, UserDbModel } from "../../models/user";
 import { db } from "./db";
@@ -24,14 +23,22 @@ export class UserStorage {
     public createUser = async (newUser: UserCreate): Promise<User> => {
         const id = crypto.randomUUID();
         const now = Date.now();
-        const passwordHash = await bcrypt.hash(newUser.password, SALT_ROUNDS);
 
         const userModel: UserDbModel = {
             id,
             username: newUser.username,
-            password: passwordHash,
+            password: newUser.password,
             createdAt: now,
         };
+
+        const existingUser = await db
+            .selectFrom("users")
+            .selectAll()
+            .where("username", "=", newUser.username)
+            .executeTakeFirst();
+        if (existingUser) {
+            throw new Error("User already exists");
+        }
 
         await db.insertInto("users").values(userModel).execute();
 
@@ -73,14 +80,22 @@ export class UserStorage {
             .where("username", "=", username)
             .executeTakeFirst();
 
-        if (!user) return null;
+        if (!user) throw new Error("User not found");
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
-        if (!isPasswordValid) return null;
+        if (user.password !== password) throw new Error("Invalid password");
 
         return this.toUser(user);
     };
+
+    public async userExists(userId: string) {
+        const user = await db
+            .selectFrom("users")
+            .selectAll()
+            .where("id", "=", userId)
+            .executeTakeFirst();
+
+        return Boolean(user);
+    }
 
     private toUser = (dbModel: UserDbModel): User => {
         const { password, ...user } = dbModel;

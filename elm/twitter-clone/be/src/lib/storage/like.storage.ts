@@ -19,9 +19,20 @@ export class LikeStorage {
     }
 
     public createLike = async (
-        userId: string,
         postId: string,
+        userId: string,
     ): Promise<void> => {
+        const existingLike = await db
+            .selectFrom("likes")
+            .selectAll()
+            .where("postId", "=", postId)
+            .where("userId", "=", userId)
+            .executeTakeFirst();
+
+        if (existingLike) {
+            throw new Error("Like already exists");
+        }
+
         const now = Date.now();
         const likeModel: LikeDbModel = {
             postId,
@@ -33,9 +44,20 @@ export class LikeStorage {
     };
 
     public deleteLike = async (
-        userId: string,
         postId: string,
+        userId: string,
     ): Promise<void> => {
+        const existingLike = await db
+            .selectFrom("likes")
+            .selectAll()
+            .where("postId", "=", postId)
+            .where("userId", "=", userId)
+            .executeTakeFirst();
+
+        if (!existingLike) {
+            return;
+        }
+
         await db
             .deleteFrom("likes")
             .where("postId", "=", postId)

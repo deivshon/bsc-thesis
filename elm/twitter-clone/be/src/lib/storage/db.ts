@@ -12,6 +12,6 @@ type Database = {
 
 export const db = new Kysely<Database>({
     dialect: new SqliteDialect({
-        database: new SQLiteDatabase("twitter_clone.db"),
+        database: new SQLiteDatabase("twitter-clone.db.sqlite3"),
     }),
 });

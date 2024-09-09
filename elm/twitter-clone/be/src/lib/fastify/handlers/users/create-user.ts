@@ -2,7 +2,7 @@ import { userCreateSchema } from "../../../../models/user";
 import { userStorage } from "../../../storage/user.storage";
 import { apiError, fastifyApp } from "../../app";
 
-export const createTodoHandler = () => {
+export const createUserHandler = () => {
     fastifyApp.post("/users", async (request, reply) => {
         const parsedBody = userCreateSchema.safeParse(request.body);
         if (!parsedBody.success) {

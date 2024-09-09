@@ -6,7 +6,7 @@ export const postSchema = z.object({
     userId: z.string(),
     createdAt: z.number(),
     likes: z.number(),
-    likedbyUser: z.boolean(),
+    likedByUser: z.boolean(),
 });
 export type Post = z.infer<typeof postSchema>;
 
