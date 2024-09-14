@@ -17,7 +17,7 @@ VS Code LaTeX extension (`James-Yu.latex-workshop`) related packages
 Dev related packages
 
 ```
-# pacman -S --needed pnpm coreutils make util-linux python expect sed bash
+# pacman -S --needed pnpm coreutils make util-linux python expect sed bash procps-ng grep findutils
 $ yay -S --needed nvm
 ```
 

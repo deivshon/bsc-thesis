@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Twitter Clone</title>
+        <link rel="stylesheet" type="text/css" href="reset.min.css" />
+        <link rel="stylesheet" type="text/css" href="styles.min.css" />
+        <link rel="icon" href="elm-logo.svg" sizes="any" type="image/svg+xml" />
+        <script src="elm.min.js"></script>
+    </head>
+
+    <body>
+        <div id="app-container"></div>
+        <script>
+            let app = Elm.Main.init({
+                node: document.getElementById("app-container"),
+            });
+        </script>
+    </body>
+</html>

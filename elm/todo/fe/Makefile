@@ -8,7 +8,7 @@ all: clean
 build: elm html css favicon
 	bash ../../shared/scripts/assets-hashing.bash ./dist
 clean:
-	rm -rf ./dist
+	rm -rf ./dist/*
 
 elm:
 	mkdir -p ./dist

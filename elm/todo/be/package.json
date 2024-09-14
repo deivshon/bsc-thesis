@@ -7,7 +7,7 @@
         "build": "pnpm i && pnpm typecheck && pnpm bundle",
         "typecheck": "tsc --noEmit",
         "bundle": "esbuild src/index.ts --bundle --outfile=dist/index.js --format=cjs --minify --platform=node",
-        "clean": "rm -rf dist"
+        "clean": "rm -rf ./dist/*"
     },
     "keywords": [],
     "author": "",

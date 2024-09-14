@@ -1,0 +1,14 @@
+{
+    "name": "todo-fe",
+    "version": "1.0.0",
+    "scripts": {
+        "make-css": "npm run make-reset-css && npm run make-styles-css",
+        "make-reset-css": "postcss --config ./postcss.config.js ../../shared/css/reset.css > ./dist/reset.min.css",
+        "make-styles-css": "postcss --config ./postcss.config.js ./src/styles.css > ./dist/styles.min.css"
+    },
+    "devDependencies": {
+        "cssnano": "^7.0.5",
+        "postcss": "^8.4.42",
+        "postcss-cli": "^11.0.0"
+    }
+}
