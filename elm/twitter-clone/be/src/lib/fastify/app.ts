@@ -34,6 +34,10 @@ export const fastifyApp = Fastify({
 fastifyApp.addHook(
     "onRequest",
     async (request: FastifyRequest, reply: FastifyReply) => {
+        if (request.method === "OPTIONS") {
+            return;
+        }
+
         for (const unprotectedRoute of UNPROTECTED_ROUTES) {
             if (
                 request.routeOptions.url === unprotectedRoute.path &&

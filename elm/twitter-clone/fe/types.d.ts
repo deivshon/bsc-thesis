@@ -1,6 +1,7 @@
 type Ports = {
-    storeToken: (token: string) => void;
-    removeToken: () => void;
+    storeToken: PortFromElm<string>;
+    removeToken: PortFromElm<void>;
+    noInteractionTokenChange: PortToElm<string | null>;
 };
 
 declare const Elm: ElmInstance<Ports>;

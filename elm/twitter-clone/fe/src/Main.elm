@@ -1,23 +1,38 @@
 module Main exposing (main)
 
+import Api
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html as H exposing (Html)
+import Html.Events as HE
+import Http
+import Login
+import Ports exposing (noInteractionTokenChange, removeToken, storeToken)
 import Url
 import Url.Parser as Parser exposing ((</>), (<?>), Parser, oneOf)
+import User
 
 
-main : Program () Model Msg
+type alias Flags =
+    { authToken : Maybe String
+    }
+
+
+main : Program Flags Model Msg
 main =
     Browser.application
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         , onUrlChange = UrlChanged
         , onUrlRequest = LinkClicked
         }
+
+
+subscriptions : a -> Sub Msg
+subscriptions _ =
+    noInteractionTokenChange TokenChangedInOtherTab
 
 
 type alias Model =
@@ -25,6 +40,7 @@ type alias Model =
     , url : Url.Url
     , page : Page
     , authToken : Maybe String
+    , loginData : Login.LoginData
     }
 
 
@@ -34,19 +50,37 @@ type Page
     | NotFound
 
 
-init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
-init _ url key =
+init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
     let
-        page =
+        initialPage =
             routeUrl url
+
+        ( page, cmd ) =
+            case flags.authToken of
+                Just _ ->
+                    ( initialPage, Cmd.none )
+
+                Nothing ->
+                    ( Login, Nav.pushUrl key "/login" )
     in
-    -- TODO - get token from local storage
-    ( Model key url page Nothing, Cmd.none )
+    ( { key = key
+      , url = url
+      , page = page
+      , authToken = flags.authToken
+      , loginData = Login.defaultLoginData
+      }
+    , cmd
+    )
 
 
 type Msg
     = LinkClicked Browser.UrlRequest
+    | LoginMsg Login.LoginMsg
+    | LoginResponse (Result Http.Error User.User)
     | UrlChanged Url.Url
+    | TokenChangedInOtherTab (Maybe String)
+    | Logout
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -64,6 +98,57 @@ update msg model =
             ( { model | url = url, page = routeUrl url }
             , Cmd.none
             )
+
+        LoginMsg loginMsg ->
+            case loginMsg of
+                Login.Submit ->
+                    let
+                        loginData =
+                            model.loginData
+                    in
+                    ( { model | loginData = { loginData | error = False } }
+                    , Api.login model.loginData LoginResponse
+                    )
+
+                _ ->
+                    ( { model | loginData = Login.update loginMsg model.loginData }
+                    , Cmd.none
+                    )
+
+        LoginResponse result ->
+            case result of
+                Ok user ->
+                    ( { model | authToken = Just user.id, loginData = Login.defaultLoginData }
+                    , Cmd.batch
+                        [ storeToken user.id
+                        , Nav.pushUrl model.key "/"
+                        ]
+                    )
+
+                Err _ ->
+                    let
+                        loginData =
+                            model.loginData
+                    in
+                    ( { model | loginData = { loginData | error = True } }, Cmd.none )
+
+        TokenChangedInOtherTab token ->
+            ( { model | authToken = token }
+            , case token of
+                Nothing ->
+                    Nav.pushUrl model.key "/login"
+
+                Just _ ->
+                    case model.page of
+                        Login ->
+                            Nav.pushUrl model.key "/"
+
+                        _ ->
+                            Cmd.none
+            )
+
+        Logout ->
+            ( { model | authToken = Nothing }, Cmd.batch [ removeToken (), Nav.pushUrl model.key "/login" ] )
 
 
 routeUrl : Url.Url -> Page
@@ -83,8 +168,8 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "Twitter Clone"
     , body =
-        [ div []
-            [ h1 [] [ text "Twitter Clone" ]
+        [ H.div []
+            [ H.h1 [] [ H.text "Twitter Clone" ]
             , viewPage model
             ]
         ]
@@ -98,7 +183,7 @@ viewPage model =
             viewHome
 
         Login ->
-            viewLogin
+            Login.viewLogin model.loginData LoginMsg
 
         NotFound ->
             viewNotFound
@@ -106,16 +191,17 @@ viewPage model =
 
 viewHome : Html Msg
 viewHome =
-    div []
-        [ h2 [] [ text "Home" ] ]
+    H.div []
+        [ H.h2 [] [ H.text "Home" ], viewLogout ]
 
 
 viewNotFound : Html Msg
 viewNotFound =
-    div []
-        [ h2 [] [ text "404 - Not Found" ] ]
+    H.div []
+        [ H.h2 [] [ H.text "404 - Not Found" ] ]
 
 
-viewLogin : Html Msg
-viewLogin =
-    div [] [ text "Login" ]
+viewLogout : Html Msg
+viewLogout =
+    H.div []
+        [ H.button [ HE.onClick Logout ] [ H.text "Logout" ] ]
