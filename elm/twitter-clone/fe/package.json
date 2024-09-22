@@ -1,5 +1,5 @@
 {
-    "name": "todo-fe",
+    "name": "twitter-clone-fe",
     "version": "1.0.0",
     "scripts": {
         "make-css": "npm run make-reset-css && npm run make-styles-css",
