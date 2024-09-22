@@ -79,5 +79,5 @@ export function assertUserId(
 fastifyApp.register(FastifyCors, {
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-User-Header"],
 });

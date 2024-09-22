@@ -7,7 +7,9 @@ import Html as H exposing (Html)
 import Html.Events as HE
 import Http
 import Login
-import Ports exposing (noInteractionTokenChange, removeToken, storeToken)
+import Models.Pagination as Pagination
+import Ports.Ports exposing (noInteractionTokenChange, removeToken, storeToken)
+import Post
 import Url
 import Url.Parser as Parser exposing ((</>), (<?>), Parser, oneOf)
 import User
@@ -41,6 +43,7 @@ type alias Model =
     , page : Page
     , authToken : Maybe String
     , loginData : Login.LoginData
+    , postsData : Post.PostsData
     }
 
 
@@ -48,6 +51,16 @@ type Page
     = Login
     | Home
     | NotFound
+
+
+postsToMsg : Result error (List Post.Post) -> Msg
+postsToMsg postsResult =
+    case postsResult of
+        Ok posts ->
+            NewPostsLoaded posts
+
+        Err _ ->
+            PostsErrored
 
 
 init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -58,8 +71,13 @@ init flags url key =
 
         ( page, cmd ) =
             case flags.authToken of
-                Just _ ->
-                    ( initialPage, Cmd.none )
+                Just token ->
+                    case initialPage of
+                        Home ->
+                            ( initialPage, Api.getPosts Pagination.defaultPaginationData token postsToMsg )
+
+                        _ ->
+                            ( initialPage, Cmd.none )
 
                 Nothing ->
                     ( Login, Nav.pushUrl key "/login" )
@@ -69,6 +87,7 @@ init flags url key =
       , page = page
       , authToken = flags.authToken
       , loginData = Login.defaultLoginData
+      , postsData = Post.defaultPostsData
       }
     , cmd
     )
@@ -80,6 +99,8 @@ type Msg
     | LoginResponse (Result Http.Error User.User)
     | UrlChanged Url.Url
     | TokenChangedInOtherTab (Maybe String)
+    | NewPostsLoaded (List Post.Post)
+    | PostsErrored
     | Logout
 
 
@@ -150,6 +171,20 @@ update msg model =
         Logout ->
             ( { model | authToken = Nothing }, Cmd.batch [ removeToken (), Nav.pushUrl model.key "/login" ] )
 
+        NewPostsLoaded newPosts ->
+            let
+                currentPostsData =
+                    model.postsData
+            in
+            ( { model | postsData = { currentPostsData | posts = currentPostsData.posts ++ newPosts, error = False } }, Cmd.none )
+
+        PostsErrored ->
+            let
+                currentPostsData =
+                    model.postsData
+            in
+            ( { model | postsData = { currentPostsData | error = True } }, Cmd.none )
+
 
 routeUrl : Url.Url -> Page
 routeUrl url =
@@ -180,7 +215,7 @@ viewPage : Model -> Html Msg
 viewPage model =
     case model.page of
         Home ->
-            viewHome
+            viewHome model
 
         Login ->
             Login.viewLogin model.loginData LoginMsg
@@ -189,10 +224,10 @@ viewPage model =
             viewNotFound
 
 
-viewHome : Html Msg
-viewHome =
+viewHome : Model -> Html Msg
+viewHome model =
     H.div []
-        [ H.h2 [] [ H.text "Home" ], viewLogout ]
+        [ H.h2 [] [ H.text "Home" ], viewLogout, Post.viewPosts model.postsData.posts ]
 
 
 viewNotFound : Html Msg

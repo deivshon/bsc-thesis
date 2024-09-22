@@ -24,22 +24,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const ports = safePorts(app);
 
     ports.storeToken?.subscribe((t) => {
-        console.debug("Storing token", t);
         authToken.set(t);
     });
 
     ports.removeToken?.subscribe(() => {
-        console.debug("Removing token");
         authToken.unset();
     });
 
     window.addEventListener("storage", (e) => {
-        console.log("Storage event", e);
         if (e.key !== authTokenKey) {
             return;
         }
 
-        console.log("Sending token change", e.newValue);
         ports.noInteractionTokenChange?.send(e.newValue);
     });
 });
