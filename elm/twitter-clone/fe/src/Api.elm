@@ -2,6 +2,7 @@ module Api exposing (..)
 
 import Http
 import Json.Decode as JD
+import Like
 import Login
 import Models.Pagination as Pagination
 import Post
@@ -46,6 +47,32 @@ getPosts pagination token toMsg =
         { method = "GET"
         , url = baseUrl ++ "/posts?skip=" ++ String.fromInt pagination.skip ++ "&limit=" ++ String.fromInt pagination.limit
         , expect = Http.expectJson toMsg Post.postListDecoder
+        , body = Http.emptyBody
+        , timeout = Nothing
+        , tracker = Nothing
+        , headers = withAuthHeader token []
+        }
+
+
+createLike : String -> String -> (Result Http.Error () -> msg) -> Cmd msg
+createLike postId token toMsg =
+    Http.request
+        { method = "POST"
+        , url = baseUrl ++ "/likes"
+        , expect = Http.expectWhatever toMsg
+        , body = Http.jsonBody (Like.createLikeBodyEncoder postId)
+        , timeout = Nothing
+        , tracker = Nothing
+        , headers = withAuthHeader token []
+        }
+
+
+deleteLike : String -> String -> (Result Http.Error () -> msg) -> Cmd msg
+deleteLike postId token toMsg =
+    Http.request
+        { method = "DELETE"
+        , url = baseUrl ++ "/likes?postId=" ++ postId
+        , expect = Http.expectWhatever toMsg
         , body = Http.emptyBody
         , timeout = Nothing
         , tracker = Nothing

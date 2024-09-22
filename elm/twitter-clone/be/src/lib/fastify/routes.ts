@@ -1,5 +1,7 @@
 import { createLikeHandler } from "./handlers/likes/create-like";
 import { deleteLikeHandler } from "./handlers/likes/delete-like";
+import { readLikeHandler } from "./handlers/likes/read-like";
+import { readPostLikesHandler } from "./handlers/likes/read-post-likes";
 import { createPostHandler } from "./handlers/posts/create-post";
 import { readPostHandler } from "./handlers/posts/read-post";
 import { readPostsHandler } from "./handlers/posts/read-posts";
@@ -20,6 +22,8 @@ const handlerRegisterers: Array<HandlerRegisterer> = [
     loginHandler,
     readUserHandler,
     searchUsersHandler,
+    readLikeHandler,
+    readPostLikesHandler,
 ];
 
 export const fastifyRoutes = {

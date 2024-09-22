@@ -16,5 +16,6 @@ export const deleteLikeHandler = () => {
         }
 
         await likeStorage.deleteLike(parsedQuery.data.postId, request.userId);
+        reply.code(204);
     });
 };

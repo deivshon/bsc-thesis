@@ -1,4 +1,4 @@
-import { LikeDbModel } from "../../models/like";
+import { Like, LikeDbModel } from "../../models/like";
 import { db } from "./db";
 import { postStorage, PostStorage } from "./post.storage";
 
@@ -14,6 +14,7 @@ export class LikeStorage {
             .addColumn("postId", "text", (col) => col.notNull())
             .addColumn("userId", "text", (col) => col.notNull())
             .addColumn("createdAt", "integer", (col) => col.notNull())
+            .addColumn("id", "text", (col) => col.notNull())
             .addPrimaryKeyConstraint("likes_primary_key", ["postId", "userId"])
             .execute();
     }
@@ -37,6 +38,7 @@ export class LikeStorage {
         const likeModel: LikeDbModel = {
             postId,
             userId,
+            id: crypto.randomUUID(),
             createdAt: now,
         };
         await db.insertInto("likes").values(likeModel).execute();
@@ -64,6 +66,26 @@ export class LikeStorage {
             .where("userId", "=", userId)
             .execute();
         await this.updateLikeCount(postId, "removed", userId);
+    };
+
+    public readLike = async (likeId: string): Promise<Like | null> => {
+        const like = await db
+            .selectFrom("likes")
+            .selectAll()
+            .where("likes.id", "=", likeId)
+            .executeTakeFirst();
+
+        return like ?? null;
+    };
+
+    public readPostLikes = async (postId: string): Promise<Array<Like>> => {
+        const likes = await db
+            .selectFrom("likes")
+            .selectAll()
+            .where("likes.postId", "=", postId)
+            .execute();
+
+        return likes ?? null;
     };
 
     private updateLikeCount = async (

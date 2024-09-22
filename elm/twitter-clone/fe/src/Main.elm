@@ -63,6 +63,55 @@ postsToMsg postsResult =
             PostsErrored
 
 
+withDifferentLikeStatus : Model -> String -> Bool -> Model
+withDifferentLikeStatus model postId liked =
+    let
+        currentPostsData =
+            model.postsData
+
+        adjustedPostsData =
+            { currentPostsData
+                | posts =
+                    if liked then
+                        Post.setPostLikedInList postId currentPostsData.posts
+
+                    else
+                        Post.setPostNotLikedInList postId currentPostsData.posts
+            }
+    in
+    { model | postsData = adjustedPostsData }
+
+
+likeCreatedToMsg : String -> Result Http.Error value -> Msg
+likeCreatedToMsg postId likeCreatedResult =
+    case likeCreatedResult of
+        Ok _ ->
+            LikeCreationSucceeded postId
+
+        Err error ->
+            case error of
+                Http.BadStatus status ->
+                    -- Conflict means there already was a like, so act like nothing happened
+                    if status == 409 then
+                        LikeCreationSucceeded postId
+
+                    else
+                        LikeCreationFailed postId
+
+                _ ->
+                    LikeCreationSucceeded postId
+
+
+likeDeletedToMsg : String -> Result Http.Error value -> Msg
+likeDeletedToMsg postId likeRemovedResult =
+    case likeRemovedResult of
+        Ok _ ->
+            LikeRemovalSucceeded postId
+
+        Err _ ->
+            LikeRemovalFailed postId
+
+
 init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
@@ -102,6 +151,10 @@ type Msg
     | NewPostsLoaded (List Post.Post)
     | PostsErrored
     | PostAction Post.PostAction
+    | LikeCreationFailed String
+    | LikeCreationSucceeded String
+    | LikeRemovalSucceeded String
+    | LikeRemovalFailed String
     | Logout
 
 
@@ -207,11 +260,33 @@ update msg model =
                         Post.LoadMore ->
                             ( model, Api.getPosts currentPostsData.pagination token postsToMsg )
 
+                        Post.AddPostLike postId ->
+                            ( withDifferentLikeStatus model postId True
+                            , Api.createLike postId token (likeCreatedToMsg postId)
+                            )
+
+                        Post.RemovePostLike postId ->
+                            ( withDifferentLikeStatus model postId False
+                            , Api.deleteLike postId token (likeDeletedToMsg postId)
+                            )
+
                         _ ->
                             ( model, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
+
+        LikeCreationFailed postId ->
+            ( withDifferentLikeStatus model postId False, Cmd.none )
+
+        LikeCreationSucceeded _ ->
+            ( model, Cmd.none )
+
+        LikeRemovalFailed postId ->
+            ( withDifferentLikeStatus model postId True, Cmd.none )
+
+        LikeRemovalSucceeded _ ->
+            ( model, Cmd.none )
 
 
 routeUrl : Url.Url -> Page

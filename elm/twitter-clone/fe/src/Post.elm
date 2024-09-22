@@ -25,6 +25,32 @@ type alias PostsData =
     }
 
 
+setPostLikedInList : String -> List Post -> List Post
+setPostLikedInList postId postList =
+    List.map
+        (\post ->
+            if post.id == postId then
+                { post | likedByUser = True, likes = post.likes + 1 }
+
+            else
+                post
+        )
+        postList
+
+
+setPostNotLikedInList : String -> List Post -> List Post
+setPostNotLikedInList postId postList =
+    List.map
+        (\post ->
+            if post.id == postId then
+                { post | likedByUser = False, likes = post.likes - 1 }
+
+            else
+                post
+        )
+        postList
+
+
 type PostAction
     = UsernameClick String
     | AddPostLike String
