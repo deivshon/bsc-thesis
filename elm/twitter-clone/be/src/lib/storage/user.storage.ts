@@ -2,8 +2,6 @@ import { sql } from "kysely";
 import { User, UserCreate, UserDbModel } from "../../models/user";
 import { db } from "./db";
 
-const SALT_ROUNDS = 10;
-
 export class UserStorage {
     constructor() {
         this.initialize();

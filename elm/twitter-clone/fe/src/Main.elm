@@ -101,6 +101,7 @@ type Msg
     | TokenChangedInOtherTab (Maybe String)
     | NewPostsLoaded (List Post.Post)
     | PostsErrored
+    | PostAction Post.PostAction
     | Logout
 
 
@@ -139,10 +140,11 @@ update msg model =
         LoginResponse result ->
             case result of
                 Ok user ->
-                    ( { model | authToken = Just user.id, loginData = Login.defaultLoginData }
+                    ( { model | authToken = Just user.id, loginData = Login.defaultLoginData, postsData = Post.defaultPostsData }
                     , Cmd.batch
                         [ storeToken user.id
                         , Nav.pushUrl model.key "/"
+                        , Api.getPosts Pagination.defaultPaginationData user.id postsToMsg
                         ]
                     )
 
@@ -169,14 +171,23 @@ update msg model =
             )
 
         Logout ->
-            ( { model | authToken = Nothing }, Cmd.batch [ removeToken (), Nav.pushUrl model.key "/login" ] )
+            ( { model | authToken = Nothing, postsData = Post.defaultPostsData }, Cmd.batch [ removeToken (), Nav.pushUrl model.key "/login" ] )
 
         NewPostsLoaded newPosts ->
             let
                 currentPostsData =
                     model.postsData
             in
-            ( { model | postsData = { currentPostsData | posts = currentPostsData.posts ++ newPosts, error = False } }, Cmd.none )
+            ( { model
+                | postsData =
+                    { currentPostsData
+                        | posts = currentPostsData.posts ++ newPosts
+                        , error = False
+                        , pagination = Pagination.nextPaginationData currentPostsData.pagination
+                    }
+              }
+            , Cmd.none
+            )
 
         PostsErrored ->
             let
@@ -184,6 +195,23 @@ update msg model =
                     model.postsData
             in
             ( { model | postsData = { currentPostsData | error = True } }, Cmd.none )
+
+        PostAction postAction ->
+            let
+                currentPostsData =
+                    model.postsData
+            in
+            case model.authToken of
+                Just token ->
+                    case postAction of
+                        Post.LoadMore ->
+                            ( model, Api.getPosts currentPostsData.pagination token postsToMsg )
+
+                        _ ->
+                            ( model, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 routeUrl : Url.Url -> Page
@@ -227,7 +255,7 @@ viewPage model =
 viewHome : Model -> Html Msg
 viewHome model =
     H.div []
-        [ H.h2 [] [ H.text "Home" ], viewLogout, Post.viewPosts model.postsData.posts ]
+        [ H.h2 [] [ H.text "Home" ], viewLogout, Post.viewPosts model.postsData.posts PostAction ]
 
 
 viewNotFound : Html Msg

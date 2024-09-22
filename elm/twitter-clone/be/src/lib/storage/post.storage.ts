@@ -1,5 +1,6 @@
 import { Post, PostCreate, PostDbModel, postSchema } from "../../models/post";
 import { db } from "./db";
+import { userStorage } from "./user.storage";
 
 export class PostStorage {
     constructor() {
@@ -33,9 +34,19 @@ export class PostStorage {
             likes: 0,
         };
 
+        const user = await userStorage.readUser(userId);
+        if (!user) {
+            throw new Error("User creating the post not found");
+        }
         await db.insertInto("posts").values(postModel).execute();
 
-        return this.toPost(postModel, false);
+        return this.toPost(
+            {
+                ...postModel,
+                username: user.username,
+            },
+            false,
+        );
     };
 
     public readPost = async (
@@ -49,12 +60,14 @@ export class PostStorage {
                     .onRef("likes.postId", "=", "posts.id")
                     .on("likes.userId", "=", userId || null),
             )
+            .innerJoin("users", "users.id", "posts.userId")
             .select([
                 "posts.id",
                 "posts.content",
                 "posts.userId",
                 "posts.createdAt",
                 "posts.likes",
+                "users.username",
                 db.fn.count("likes.userId").as("likedByUser"),
             ])
             .where("posts.id", "=", postId)
@@ -76,12 +89,14 @@ export class PostStorage {
                     .onRef("likes.postId", "=", "posts.id")
                     .on("likes.userId", "=", userId || null),
             )
+            .innerJoin("users", "users.id", "posts.userId")
             .select([
                 "posts.id",
                 "posts.content",
                 "posts.userId",
                 "posts.createdAt",
                 "posts.likes",
+                "users.username",
                 db.fn.count("likes.userId").as("likedByUser"),
             ])
             .groupBy("posts.id")
@@ -107,7 +122,10 @@ export class PostStorage {
     };
 
     private toPost = (
-        dbModel: PostDbModel & { likedByUser?: number | bigint | string },
+        dbModel: PostDbModel & {
+            likedByUser?: number | bigint | string;
+            username: string;
+        },
         likedByUser: boolean,
     ): Post => {
         const post = {

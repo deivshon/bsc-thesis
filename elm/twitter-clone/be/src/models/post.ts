@@ -4,6 +4,7 @@ export const postSchema = z.object({
     id: z.string(),
     content: z.string(),
     userId: z.string(),
+    username: z.string(),
     createdAt: z.number(),
     likes: z.number(),
     likedByUser: z.boolean(),
