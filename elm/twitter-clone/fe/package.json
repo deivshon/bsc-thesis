@@ -2,7 +2,7 @@
     "name": "twitter-clone-fe",
     "version": "1.0.0",
     "scripts": {
-        "make-css": "npm run make-reset-css && npm run make-styles-css",
+        "make-css": "pnpm run make-reset-css && pnpm run make-styles-css",
         "make-reset-css": "postcss --config ./postcss.config.js ../../shared/css/reset.css > ./dist/reset.min.css",
         "make-styles-css": "postcss --config ./postcss.config.js ./src/styles.css > ./dist/styles.min.css",
         "build-js": "tsc --noEmit && esbuild src/ts/index.ts --bundle --outfile=dist/index.min.js --format=cjs --minify --platform=browser"

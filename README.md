@@ -5,7 +5,7 @@
 LaTeX compilation related packages
 
 ```
-# pacman -S --needed texlive texlive-langitalian
+# pacman -S --needed texlive texlive-langitalian python-pygments
 ```
 
 VS Code LaTeX extension (`James-Yu.latex-workshop`) related packages
@@ -17,7 +17,7 @@ VS Code LaTeX extension (`James-Yu.latex-workshop`) related packages
 Dev related packages
 
 ```
-# pacman -S --needed pnpm coreutils make util-linux python expect sed bash procps-ng grep findutils
+# pacman -S --needed pnpm coreutils make util-linux python expect sed bash procps-ng grep findutils inotify-tools
 $ yay -S --needed nvm
 ```
 

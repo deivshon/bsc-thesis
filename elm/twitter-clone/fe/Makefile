@@ -24,7 +24,7 @@ elm-debug:
 	elm make ./src/Main.elm --output=./dist/elm.js
 	mv ./dist/elm.js ./dist/elm.min.js
 js:
-	npm run build-js
+	pnpm run build-js
 html:
 	pnpx html-minifier@4.0.0 ./src/index.html --minify-js --collapse-whitespace --output ./dist/index.html
 css:
