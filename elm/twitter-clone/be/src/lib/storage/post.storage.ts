@@ -81,8 +81,9 @@ export class PostStorage {
         skip: number,
         limit: number,
         userId: string,
+        targetUserId?: string,
     ): Promise<Post[]> => {
-        const posts = await db
+        let query = db
             .selectFrom("posts")
             .leftJoin("likes", (join) =>
                 join
@@ -98,7 +99,13 @@ export class PostStorage {
                 "posts.likes",
                 "users.username",
                 db.fn.count("likes.userId").as("likedByUser"),
-            ])
+            ]);
+
+        if (targetUserId) {
+            query = query.where("posts.userId", "=", targetUserId);
+        }
+
+        const posts = await query
             .groupBy("posts.id")
             .orderBy("posts.createdAt", "desc")
             .limit(limit)

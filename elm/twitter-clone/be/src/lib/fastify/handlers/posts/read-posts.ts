@@ -5,6 +5,7 @@ import { apiError, assertUserId, fastifyApp } from "../../app";
 const querySchema = z.object({
     skip: z.number({ coerce: true }),
     limit: z.number({ coerce: true }),
+    userId: z.string().optional(),
 });
 
 export const readPostsHandler = () => {
@@ -20,6 +21,7 @@ export const readPostsHandler = () => {
             parsedQuery.data.skip,
             parsedQuery.data.limit,
             request.userId,
+            parsedQuery.data.userId,
         );
     });
 };
