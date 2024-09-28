@@ -3,11 +3,17 @@ MAKEFLAGS += -j$(NPROCS)
 
 .PHONY: all build clean elm html css
 
-all: clean
+all: clean-dist
 	$(MAKE) build
-build: elm html css favicon
+build: pkgs-install
+	$(MAKE) compile
+compile: elm html css favicon
 	bash ../../shared/scripts/assets-hashing.bash ./dist
-clean:
+pkgs-install:
+	pnpm i
+clean: clean-dist
+	rm -rf ./elm-stuff ./node_modules
+clean-dist:
 	rm -rf ./dist/*
 
 elm:
