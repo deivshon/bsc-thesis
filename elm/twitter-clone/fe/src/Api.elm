@@ -41,6 +41,15 @@ login content toMsg =
         }
 
 
+signup : Login.LoginData -> (Result Http.Error User.User -> msg) -> Cmd msg
+signup content toMsg =
+    Http.post
+        { url = "http://localhost:3001/users"
+        , body = Http.jsonBody (Login.loginDataEncoder content)
+        , expect = Http.expectJson toMsg User.userDecoder
+        }
+
+
 getPosts : Pagination.PaginationData -> String -> (Result Http.Error (List Post.Post) -> msg) -> Cmd msg
 getPosts pagination token toMsg =
     Http.request

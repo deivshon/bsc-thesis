@@ -43,6 +43,7 @@ type alias Model =
     , page : Page
     , authToken : Maybe String
     , loginData : Login.LoginData
+    , signupData : Login.LoginData
     , postsData : Post.PostsData
     }
 
@@ -136,6 +137,7 @@ init flags url key =
       , page = page
       , authToken = flags.authToken
       , loginData = Login.defaultLoginData
+      , signupData = Login.defaultLoginData
       , postsData = Post.defaultPostsData
       }
     , cmd
@@ -145,6 +147,7 @@ init flags url key =
 type Msg
     = LinkClicked Browser.UrlRequest
     | LoginMsg Login.LoginMsg
+    | SignupMsg Login.LoginMsg
     | LoginResponse (Result Http.Error User.User)
     | UrlChanged Url.Url
     | TokenChangedInOtherTab (Maybe String)
@@ -193,7 +196,7 @@ update msg model =
         LoginResponse result ->
             case result of
                 Ok user ->
-                    ( { model | authToken = Just user.id, loginData = Login.defaultLoginData, postsData = Post.defaultPostsData }
+                    ( { model | authToken = Just user.id, loginData = Login.defaultLoginData, signupData = Login.defaultLoginData, postsData = Post.defaultPostsData }
                     , Cmd.batch
                         [ storeToken user.id
                         , Nav.pushUrl model.key "/"
@@ -288,6 +291,22 @@ update msg model =
         LikeRemovalSucceeded _ ->
             ( model, Cmd.none )
 
+        SignupMsg signupMsg ->
+            case signupMsg of
+                Login.Submit ->
+                    let
+                        signupData =
+                            model.signupData
+                    in
+                    ( { model | signupData = { signupData | error = False } }
+                    , Api.signup model.signupData LoginResponse
+                    )
+
+                _ ->
+                    ( { model | signupData = Login.update signupMsg model.signupData }
+                    , Cmd.none
+                    )
+
 
 routeUrl : Url.Url -> Page
 routeUrl url =
@@ -321,7 +340,10 @@ viewPage model =
             viewHome model
 
         Login ->
-            Login.viewLogin model.loginData LoginMsg
+            H.div []
+                [ Login.viewLogin "Login" model.loginData LoginMsg
+                , Login.viewLogin "Signup" model.signupData SignupMsg
+                ]
 
         NotFound ->
             viewNotFound

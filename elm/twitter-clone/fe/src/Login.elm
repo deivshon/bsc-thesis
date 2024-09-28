@@ -48,14 +48,13 @@ update msg loginData =
             loginData
 
 
-viewLogin : { a | username : String, password : String, error : Bool } -> (LoginMsg -> msg) -> H.Html msg
-viewLogin loginData onAction =
+viewLogin label loginData onAction =
     H.div []
-        [ H.h1 [] [ H.text "Login" ]
+        [ H.h1 [] [ H.text label ]
         , H.form [ HE.onSubmit (onAction Submit) ]
             [ H.input [ HA.type_ "text", HA.placeholder "Username", HA.value loginData.username, HE.onInput (\username -> onAction (UsernameChange username)) ] []
             , H.input [ HA.type_ "password", HA.placeholder "Password", HA.value loginData.password, HE.onInput (\password -> onAction (PasswordChange password)) ] []
-            , H.button [ HA.type_ "submit" ] [ H.text "Login" ]
+            , H.button [ HA.type_ "submit" ] [ H.text label ]
             ]
         , H.div []
             [ H.text
