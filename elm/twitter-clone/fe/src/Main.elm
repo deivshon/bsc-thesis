@@ -46,6 +46,7 @@ type alias Model =
     , signupData : Login.LoginData
     , postsData : Post.PostsData
     , userPostsData : Post.PostsData
+    , newPost : String
     }
 
 
@@ -74,6 +75,16 @@ userPostsToMsg postsResult =
 
         Err _ ->
             UserPostsErrored
+
+
+newPostToMsg : Result error Post.Post -> Msg
+newPostToMsg newPostResult =
+    case newPostResult of
+        Ok newPost ->
+            NewPostCreationSucceeded newPost
+
+        Err _ ->
+            NewPostCreationFailed
 
 
 withDifferentLikeStatus : Model -> String -> Bool -> Model
@@ -168,6 +179,7 @@ init flags url key =
       , signupData = Login.defaultLoginData
       , postsData = Post.defaultPostsData
       , userPostsData = Post.defaultPostsData
+      , newPost = Post.defaultNewPost
       }
     , cmd
     )
@@ -189,6 +201,9 @@ type Msg
     | LikeCreationSucceeded String
     | LikeRemovalSucceeded String
     | LikeRemovalFailed String
+    | NewPostAction Post.NewPostAction
+    | NewPostCreationSucceeded Post.Post
+    | NewPostCreationFailed
     | Logout
 
 
@@ -292,6 +307,7 @@ update msg model =
                 | authToken = Nothing
                 , postsData = Post.defaultPostsData
                 , userPostsData = Post.defaultPostsData
+                , newPost = Post.defaultNewPost
               }
             , Cmd.batch [ removeToken (), Nav.pushUrl model.key "/login" ]
             )
@@ -428,6 +444,32 @@ update msg model =
                     , Cmd.none
                     )
 
+        NewPostAction action ->
+            case action of
+                Post.ChangeNewPost newPostText ->
+                    ( { model | newPost = newPostText }, Cmd.none )
+
+                Post.SubmitNewPost ->
+                    case model.authToken of
+                        Just token ->
+                            ( { model | newPost = Post.defaultNewPost }, Api.createPost model.newPost token newPostToMsg )
+
+                        _ ->
+                            ( model, Cmd.none )
+
+        NewPostCreationSucceeded _ ->
+            case model.authToken of
+                Just token ->
+                    ( { model | postsData = Post.defaultPostsData }
+                    , Api.getPosts Pagination.defaultPaginationData token Nothing postsToMsg
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        NewPostCreationFailed ->
+            ( model, Cmd.none )
+
 
 routeUrl : Url.Url -> Page
 routeUrl url =
@@ -477,7 +519,7 @@ viewPage model =
 viewHome : Model -> Html Msg
 viewHome model =
     H.div []
-        [ H.h2 [] [ H.text "Home" ], viewLogout, Post.viewPosts model.postsData.posts PostAction ]
+        [ H.h2 [] [ H.text "Home" ], viewLogout, Post.viewPostEditor model.newPost NewPostAction, Post.viewPosts model.postsData.posts PostAction ]
 
 
 viewNotFound : Html Msg

@@ -98,3 +98,16 @@ deleteLike postId token toMsg =
         , tracker = Nothing
         , headers = withAuthHeader token []
         }
+
+
+createPost : String -> String -> (Result Http.Error Post.Post -> msg) -> Cmd msg
+createPost newPostText token toMsg =
+    Http.request
+        { method = "POST"
+        , url = baseUrl ++ "/posts"
+        , expect = Http.expectJson toMsg Post.postDecoder
+        , body = Http.jsonBody (Post.newPostEncoder newPostText)
+        , timeout = Nothing
+        , tracker = Nothing
+        , headers = withAuthHeader token []
+        }

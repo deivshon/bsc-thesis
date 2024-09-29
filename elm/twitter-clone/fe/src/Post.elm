@@ -4,6 +4,7 @@ import Html as H
 import Html.Attributes as HA
 import Html.Events as HE
 import Json.Decode as JD
+import Json.Encode as JE
 import Models.Pagination as Pagination
 
 
@@ -15,6 +16,11 @@ type alias Post =
     , likes : Int
     , likedByUser : Bool
     , username : String
+    }
+
+
+type alias NewPost =
+    { content : String
     }
 
 
@@ -58,12 +64,22 @@ type PostAction
     | LoadMore
 
 
+type NewPostAction
+    = ChangeNewPost String
+    | SubmitNewPost
+
+
 defaultPostsData : PostsData
 defaultPostsData =
     { posts = []
     , error = False
     , pagination = Pagination.defaultPaginationData
     }
+
+
+defaultNewPost : String
+defaultNewPost =
+    ""
 
 
 postDecoder : JD.Decoder Post
@@ -76,6 +92,11 @@ postDecoder =
         (JD.field "likes" JD.int)
         (JD.field "likedByUser" JD.bool)
         (JD.field "username" JD.string)
+
+
+newPostEncoder : String -> JE.Value
+newPostEncoder newPostText =
+    JE.object [ ( "content", JE.string newPostText ) ]
 
 
 postListDecoder : JD.Decoder (List Post)
@@ -117,3 +138,11 @@ viewPosts posts onPostAction =
         (List.map (\p -> viewPost p onPostAction) posts
             ++ [ H.button [ HE.onClick (onPostAction LoadMore) ] [ H.text "Load more" ] ]
         )
+
+
+viewPostEditor : String -> (NewPostAction -> msg) -> H.Html msg
+viewPostEditor postText onNewPostAction =
+    H.div []
+        [ H.textarea [ HA.value postText, HE.onInput (\changedPostText -> onNewPostAction (ChangeNewPost changedPostText)) ] []
+        , H.button [ HE.onClick (onNewPostAction SubmitNewPost) ] [ H.text "Submit new post" ]
+        ]
