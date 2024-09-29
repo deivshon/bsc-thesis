@@ -45,12 +45,14 @@ type alias Model =
     , loginData : Login.LoginData
     , signupData : Login.LoginData
     , postsData : Post.PostsData
+    , userPostsData : Post.PostsData
     }
 
 
 type Page
     = Login
     | Home
+    | UserPage String
     | NotFound
 
 
@@ -64,11 +66,24 @@ postsToMsg postsResult =
             PostsErrored
 
 
+userPostsToMsg : Result error (List Post.Post) -> Msg
+userPostsToMsg postsResult =
+    case postsResult of
+        Ok posts ->
+            NewUserPostsLoaded posts
+
+        Err _ ->
+            UserPostsErrored
+
+
 withDifferentLikeStatus : Model -> String -> Bool -> Model
 withDifferentLikeStatus model postId liked =
     let
         currentPostsData =
             model.postsData
+
+        currentUserPostsData =
+            model.userPostsData
 
         adjustedPostsData =
             { currentPostsData
@@ -79,8 +94,18 @@ withDifferentLikeStatus model postId liked =
                     else
                         Post.setPostNotLikedInList postId currentPostsData.posts
             }
+
+        adjustedUserPostsData =
+            { currentUserPostsData
+                | posts =
+                    if liked then
+                        Post.setPostLikedInList postId currentUserPostsData.posts
+
+                    else
+                        Post.setPostNotLikedInList postId currentUserPostsData.posts
+            }
     in
-    { model | postsData = adjustedPostsData }
+    { model | postsData = adjustedPostsData, userPostsData = adjustedUserPostsData }
 
 
 likeCreatedToMsg : String -> Result Http.Error value -> Msg
@@ -124,7 +149,10 @@ init flags url key =
                 Just token ->
                     case initialPage of
                         Home ->
-                            ( initialPage, Api.getPosts Pagination.defaultPaginationData token postsToMsg )
+                            ( initialPage, Api.getPosts Pagination.defaultPaginationData token Nothing postsToMsg )
+
+                        UserPage userId ->
+                            ( initialPage, Api.getPosts Pagination.defaultPaginationData token (Just userId) userPostsToMsg )
 
                         _ ->
                             ( initialPage, Cmd.none )
@@ -139,6 +167,7 @@ init flags url key =
       , loginData = Login.defaultLoginData
       , signupData = Login.defaultLoginData
       , postsData = Post.defaultPostsData
+      , userPostsData = Post.defaultPostsData
       }
     , cmd
     )
@@ -152,7 +181,9 @@ type Msg
     | UrlChanged Url.Url
     | TokenChangedInOtherTab (Maybe String)
     | NewPostsLoaded (List Post.Post)
+    | NewUserPostsLoaded (List Post.Post)
     | PostsErrored
+    | UserPostsErrored
     | PostAction Post.PostAction
     | LikeCreationFailed String
     | LikeCreationSucceeded String
@@ -173,8 +204,32 @@ update msg model =
                     ( model, Nav.load href )
 
         UrlChanged url ->
-            ( { model | url = url, page = routeUrl url }
-            , Cmd.none
+            let
+                newPage =
+                    routeUrl url
+            in
+            ( { model
+                | url = url
+                , page = newPage
+                , userPostsData =
+                    case newPage of
+                        UserPage _ ->
+                            Post.defaultPostsData
+
+                        _ ->
+                            model.userPostsData
+              }
+            , case model.authToken of
+                Nothing ->
+                    Cmd.none
+
+                Just token ->
+                    case newPage of
+                        UserPage userId ->
+                            Api.getPosts Post.defaultPostsData.pagination token (Just userId) userPostsToMsg
+
+                        _ ->
+                            Cmd.none
             )
 
         LoginMsg loginMsg ->
@@ -196,11 +251,17 @@ update msg model =
         LoginResponse result ->
             case result of
                 Ok user ->
-                    ( { model | authToken = Just user.id, loginData = Login.defaultLoginData, signupData = Login.defaultLoginData, postsData = Post.defaultPostsData }
+                    ( { model
+                        | authToken = Just user.id
+                        , loginData = Login.defaultLoginData
+                        , signupData = Login.defaultLoginData
+                        , postsData = Post.defaultPostsData
+                        , userPostsData = Post.defaultPostsData
+                      }
                     , Cmd.batch
                         [ storeToken user.id
                         , Nav.pushUrl model.key "/"
-                        , Api.getPosts Pagination.defaultPaginationData user.id postsToMsg
+                        , Api.getPosts Pagination.defaultPaginationData user.id Nothing postsToMsg
                         ]
                     )
 
@@ -227,7 +288,13 @@ update msg model =
             )
 
         Logout ->
-            ( { model | authToken = Nothing, postsData = Post.defaultPostsData }, Cmd.batch [ removeToken (), Nav.pushUrl model.key "/login" ] )
+            ( { model
+                | authToken = Nothing
+                , postsData = Post.defaultPostsData
+                , userPostsData = Post.defaultPostsData
+              }
+            , Cmd.batch [ removeToken (), Nav.pushUrl model.key "/login" ]
+            )
 
         NewPostsLoaded newPosts ->
             let
@@ -245,6 +312,22 @@ update msg model =
             , Cmd.none
             )
 
+        NewUserPostsLoaded newUserPosts ->
+            let
+                currentUserPostsData =
+                    model.userPostsData
+            in
+            ( { model
+                | userPostsData =
+                    { currentUserPostsData
+                        | posts = currentUserPostsData.posts ++ newUserPosts
+                        , error = False
+                        , pagination = Pagination.nextPaginationData currentUserPostsData.pagination
+                    }
+              }
+            , Cmd.none
+            )
+
         PostsErrored ->
             let
                 currentPostsData =
@@ -252,16 +335,50 @@ update msg model =
             in
             ( { model | postsData = { currentPostsData | error = True } }, Cmd.none )
 
+        UserPostsErrored ->
+            let
+                currentUserPostsData =
+                    model.userPostsData
+            in
+            ( { model | userPostsData = { currentUserPostsData | error = True } }, Cmd.none )
+
         PostAction postAction ->
             let
                 currentPostsData =
                     model.postsData
+
+                currentUserPostsdata =
+                    model.userPostsData
             in
             case model.authToken of
                 Just token ->
                     case postAction of
                         Post.LoadMore ->
-                            ( model, Api.getPosts currentPostsData.pagination token postsToMsg )
+                            ( model
+                            , Api.getPosts
+                                (case model.page of
+                                    UserPage _ ->
+                                        currentUserPostsdata.pagination
+
+                                    _ ->
+                                        currentPostsData.pagination
+                                )
+                                token
+                                (case model.page of
+                                    UserPage userId ->
+                                        Just userId
+
+                                    _ ->
+                                        Nothing
+                                )
+                                (case model.page of
+                                    UserPage _ ->
+                                        userPostsToMsg
+
+                                    _ ->
+                                        postsToMsg
+                                )
+                            )
 
                         Post.AddPostLike postId ->
                             ( withDifferentLikeStatus model postId True
@@ -273,8 +390,12 @@ update msg model =
                             , Api.deleteLike postId token (likeDeletedToMsg postId)
                             )
 
-                        _ ->
-                            ( model, Cmd.none )
+                        Post.UserClick userId ->
+                            ( model
+                            , Cmd.batch
+                                [ Nav.pushUrl model.key ("/users/" ++ userId)
+                                ]
+                            )
 
                 _ ->
                     ( model, Cmd.none )
@@ -318,6 +439,7 @@ routeParser =
     oneOf
         [ Parser.map Home Parser.top
         , Parser.map Login (Parser.s "login")
+        , Parser.map UserPage (Parser.s "users" </> Parser.string)
         ]
 
 
@@ -345,6 +467,9 @@ viewPage model =
                 , Login.viewLogin "Signup" model.signupData SignupMsg
                 ]
 
+        UserPage _ ->
+            viewUserPage model
+
         NotFound ->
             viewNotFound
 
@@ -365,3 +490,9 @@ viewLogout : Html Msg
 viewLogout =
     H.div []
         [ H.button [ HE.onClick Logout ] [ H.text "Logout" ] ]
+
+
+viewUserPage : { a | userPostsData : { b | posts : List Post.Post } } -> Html Msg
+viewUserPage model =
+    H.div []
+        [ H.h2 [] [ H.text "User Page" ], viewLogout, Post.viewPosts model.userPostsData.posts PostAction ]

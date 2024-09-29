@@ -4,7 +4,6 @@ import Http
 import Json.Decode as JD
 import Like
 import Login
-import Models.Pagination as Pagination
 import Post
 import User
 
@@ -50,11 +49,23 @@ signup content toMsg =
         }
 
 
-getPosts : Pagination.PaginationData -> String -> (Result Http.Error (List Post.Post) -> msg) -> Cmd msg
-getPosts pagination token toMsg =
+getPosts : { a | skip : Int, limit : Int } -> String -> Maybe String -> (Result Http.Error (List Post.Post) -> msg) -> Cmd msg
+getPosts pagination token maybeUserId toMsg =
     Http.request
         { method = "GET"
-        , url = baseUrl ++ "/posts?skip=" ++ String.fromInt pagination.skip ++ "&limit=" ++ String.fromInt pagination.limit
+        , url =
+            baseUrl
+                ++ "/posts?skip="
+                ++ String.fromInt pagination.skip
+                ++ "&limit="
+                ++ String.fromInt pagination.limit
+                ++ (case maybeUserId of
+                        Just userId ->
+                            "&userId=" ++ userId
+
+                        Nothing ->
+                            ""
+                   )
         , expect = Http.expectJson toMsg Post.postListDecoder
         , body = Http.emptyBody
         , timeout = Nothing

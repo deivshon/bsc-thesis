@@ -52,7 +52,7 @@ setPostNotLikedInList postId postList =
 
 
 type PostAction
-    = UsernameClick String
+    = UserClick String
     | AddPostLike String
     | RemovePostLike String
     | LoadMore
@@ -86,7 +86,7 @@ postListDecoder =
 viewPost : Post -> (PostAction -> msg) -> H.Html msg
 viewPost post onPostAction =
     H.div [ HA.class "post" ]
-        [ H.button [ HE.onClick (onPostAction (UsernameClick post.userId)) ] [ H.text ("User: " ++ post.username) ]
+        [ H.button [ HE.onClick (onPostAction (UserClick post.userId)) ] [ H.text ("User: " ++ post.username) ]
         , H.span [] [ H.text post.content ]
         , H.span [] [ H.text ("Likes: " ++ String.fromInt post.likes) ]
         , H.button
