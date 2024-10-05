@@ -1,6 +1,14 @@
-\chapter*{Introduzione}
-\addcontentsline{toc}{chapter}{Introduzione}
-\pagestyle{plain}
+\chapter{Introduzione}
 \setcounter{page}{1}
 
 Corpo introduzione
+
+\section{State of the art}
+% Functional languages for frontend, mention purescript/rescript
+\section{Elm}
+\subsection{Stated design goals}
+% No runtime errors, even at the cost of limited interoperability
+\subsection{Language features}
+% ADTs, pattern matching, strong inference
+\subsection{The Elm Architecture (TEA)}
+% Mention impossibility of tying messages with a particular state, which often result in boilerplate (e.g. what do you do if you get a message that prompts you to fetch stuff but you don't have a token loaded? You need to handle that case for all messages if you have some token in your state. Solution is to pass the token in the message but this means you have to drill the token down to all components that use it)

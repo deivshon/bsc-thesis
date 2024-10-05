@@ -1,0 +1,16 @@
+\chapter{Considerations}
+
+\section{Elm Tooling}
+\subsection{Modularity}
+% No single binary with everything, tooling is also npm based
+\subsection{Bundling}
+% Mention that there is no obvious way to bundle ports with elm's tooling and the user is left to whatever solution they choose
+\section{(Lack of) Components}
+\subsection{Elm's approach}
+% Mention centralized state handling overhead
+% Mention the whole components debate, refer to granular loaders and the login component and state on URLs change, all stuff that emerges naturally in framework-based solutions. Mention the fact that Elm makes you think about all state within your application in your Main.elm vs other frameworks you can have local state. Mention nested TEA as an Elm antipattern
+\subsection{Nested TEA as an anti-pattern}
+% Html.map etc
+\section{Limited interoperability}
+% No willingness to create tools that even help with interoperability, ports code generation comes to mind for instance, while canonically you have to create the .d.ts file yourself if you want typesafety (which you don't have unless you specify everything as their T | undefined)
+\section{Final thoughts}

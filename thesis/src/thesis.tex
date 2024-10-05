@@ -77,6 +77,10 @@
 \input{sections/abstract}
 
 \newpage~\newpage
+\pagenumbering{gobble}
+\input{sections/abstract-italian.tex}
+
+\newpage~\newpage
 
 % Spacing and indent when changing paragraphs
 \setlength{\parindent}{0pt}
@@ -95,7 +99,11 @@
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{11pt}
 
-\input{sections/introduction}
+\input{sections/introduction.tex}
+
+\input{sections/implementations.tex}
+
+\input{sections/considerations.tex}
 
 
 \printbibliography
