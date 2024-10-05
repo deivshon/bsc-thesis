@@ -1,10 +1,68 @@
 \section{To do app}
 
+A "To do" app is a simple software that handles reminders for the user. Implementing one is a typical way to try out new frontend frameworks and languages, and allows to explore how the Elm language feels when dealing with a simple web application.
+
 \subsection{Project structure}
+
 % Mention the idea of dividing the project into type-based files and not components
+In more traditional frontend frameworks the code is typically split up in many self-containing parts called "components". This division creates a natural structure to be followed: each component is placed in a separate file. In some frameworks such as Svelte this is enforced, as no more than one component can exist per file \cite{noauthor_svelte_nodate}. Since in Elm components do not exist, this project structure can't be adopted. Instead, what the official Elm guide suggests is to divide your code into modules that have a central type \cite{noauthor_structure_nodate} .\\
+
+Here we're only going to have one page in the web app and therefore there's only going to be a single \texttt{Model}, so we're going to divide the code into a \texttt{Main.elm}, which will handle all of the TEA cycle, an \texttt{Api.elm} module, which will contain all of the functions that fetch or send data to the server, and a \texttt{Todo.elm}, containing all of the helper functions needed to handle the \texttt{Todo} data type in the application
+
+% //TODO present the decoding/encoding function too
 \subsection{API Layer}
+
 % Mention api handling and toMsg pattern and decode/encode patterns
+In order to allow persistance we need to store data in a database, which we communicate with through API calls to a server. This is the function that calls the API endpoint to retrieve existing \texttt{Todo} entities:
+
+% //TODO Format this code properly, this doesn't look monospaced
+\begin{minted}{elm}
+getTodos :
+    (Result Http.Error (List Todo.Todo)
+     -> msg
+    )
+    -> Cmd msg
+getTodos toMsg =
+    Http.get
+        { url = baseUrl ++ "/todos"
+        , expect = Http.expectJson toMsg Todo.todoListDecoder
+        }
+\end{minted}
+
+The \texttt{getTodos} function retrieves all \texttt{Todo} entities from the server and only takes one parameter of type \texttt{(Result Http.Error (List Todo.Todo) -> msg)}. This function is in turn called by \texttt{Http.expectJson} once the API call is complete or errored out (hence the wrapping in the \texttt{Result} type), and it returns a \texttt{msg}, which will then be handled by the main update function of the application.\\
+
+Since Elm does not allow any unknown data to enter without being parsed, "decoder" helper functions are needed to validate inbound data which will then be passed to the rest of the program, guaranteeing that the data it's handling has the expected structure. This is concretized by needing to pass the \texttt{Http.expectJson} function not only a function to be called once the API call is complete, but also the "decoder" function that will handle the parsing of the response body. If the parsing fails, the \texttt{toMsg} function is called with the \texttt{Http.BadBody} error, meaning the response body was not the of the expected data type. This ensures that even when a backend service any Elm application is communicating with returns bad data, the application is not going to crash on the client, but gracefully handle the error.\\
+
+To allow new data the user creates or existing data they update to be persistent, API calls that send this data to the server are also needed. This is the function that calls the API endpoint to update a \texttt{Todo} entity:
+
+\begin{minted}{elm}
+updateTodo :
+    String
+    -> Todo.TodoUpdateBody
+    -> (Result Http.Error () -> msg)
+    -> Cmd msg
+updateTodo id todoUpdate toMsg =
+    Http.request
+        { method = "PATCH"
+        , headers = []
+        , url = baseUrl ++ "/todos/" ++ id
+        , body =
+            Http.jsonBody
+                (Todo.todoUpdateEncoder todoUpdate)
+        , expect = Http.expectWhatever toMsg
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+\end{minted}
+
+\begin{sloppypar}
+Since this is using the HTTP PATCH method, wrapping the more generic \texttt{Http.request} is needed, which requires to specify a few more parameters that are not interesting for the sake of this section.\\
+This function takes three arguments instead, the \texttt{id} of the \texttt{Todo} entity the user wants to update, the \texttt{todoUpdate}, containing the data fields/values that need to be changed on the server, and the usual \texttt{toMsg} function to handle whatever the result is.\\
+This time, since a body is being passed to the function, we need to make sure that whatever data we're sending to the endpoint is properly encoded, for this reason a JSON encoder that accepts data of the type \texttt{TodoUpdateBody} is used, the result is then passed along to \texttt{Http.jsonBody}, which allows the \texttt{Http} library to send a proper HTTP call to the server based on what type the body is.
+\end{sloppypar}
+
 \subsection{Optimistic UI updates}
 % Mention extra data needed to handle UI not optimistically
+
 \subsection{Granular state handling}
 % Mention granular loaders, two strategies creating map and creating a type that has DTO data and UI stuff like loaders

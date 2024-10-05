@@ -1,19 +1,24 @@
 \documentclass[12pt,a4paper,twoside]{book}
 
 \usepackage[utf8]{inputenc}
-\usepackage[a4paper,inner=3.5cm,outer=2.5cm]{geometry}
+\usepackage[a4paper,inner=3cm,outer=3cm]{geometry}
 
 \usepackage[titletoc,title,toc,page]{appendix}
 \usepackage{verbatim}
 \usepackage{placeins}
 \usepackage{listings}
+\usepackage{courier}
+
+\lstset{basicstyle=\footnotesize\ttfamily,breaklines=true}
+\lstset{framextopmargin=50pt}
 \usepackage{hyperref}
 \usepackage[backend=bibtex,style=numeric]{biblatex}
-% \addbibresource{bibliografy.bib}
+\addbibresource{bibliography.bib}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta}
 \usepackage{amsmath}
 \usepackage{minted}
+\setminted{fontsize=\small}
 
 \usepackage{graphicx}
 \usepackage{blindtext}
