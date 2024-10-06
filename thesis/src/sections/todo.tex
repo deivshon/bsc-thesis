@@ -65,3 +65,32 @@ This time, since a body is being passed to the function, we need to make sure th
 
 \subsection{Granular state handling}
 % Mention granular loaders, two strategies creating map and creating a type that has DTO data and UI stuff like loaders
+This "To do" web application has a few user initiated operations that need to wait for the server to send a response:
+\begin{itemize}
+    \item Creation of a \textit{To do} entity
+    \item Deletion of \textit{To do} entity
+    \item Update of a \textit{To do} entity
+\end{itemize}
+These interactions change the state of a single entity in the application, it would therefore make sense to render a UI element representing the loading state that is specific to the operation and, if existing, entity, the interaction concerned. These being the \textit{To do} box in the case of an update or deletion and the \textit{To do} creation box otherwise.\\
+
+In Elm the shape of the whole state needs to be specified upfront, as there is no concept of local state. This makes it convenient to create a global loader, using a simple \texttt{Int} to track how many operations are currently in a loading state and rendering it conditionally. \\
+But if we want to make this granular, we have a few options, each needing some amount of added boilerplate code:
+\begin{enumerate}
+    \item Wrapping each \texttt{Todo} entity in another type, containing the necessary extra state for it to be handled within the UI: \\
+    \begin{minted}{elm}
+type alias UITodo =
+{ loading : Bool
+, todo : Todo
+}
+    \end{minted}
+    \item Using a \texttt{Dict} that univocally links a \texttt{Todo} (using its \texttt{id}) to its loading state
+    \begin{minted}{elm}
+type alias LoadingStates =
+    Dict String Bool
+    \end{minted}
+    and storing it in the \texttt{Model}
+\end{enumerate} 
+
+In terms of type safety, the first option is better as the loading state is tied to the \texttt{Todo} itself, thereby eliminating one indirection layer that has the potential to not be handled correctly (by, for instance, inserting a wrong \texttt{id} as a key in the \texttt{Dict}). \\
+Starting from a version of the app with no loading state indicators, it is also the one that takes more refactoring, since in both the \texttt{LoadingStates} and global loader cases there is no need to modify how the \texttt{Todo} entities are passed to the various helper functions. \\
+
