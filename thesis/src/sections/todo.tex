@@ -67,9 +67,6 @@ This function takes three arguments instead, the \texttt{id} of the \texttt{Todo
 This time, since a body is being passed to the function, we need to make sure that whatever data we're sending to the endpoint is properly encoded, for this reason a JSON encoder that accepts data of the type \texttt{TodoUpdateBody} is used, the result is then passed along to \texttt{Http.jsonBody}, which allows the \texttt{Http} library to send a proper HTTP call to the server based on what type the body is.
 \end{sloppypar}
 
-\subsection{Optimistic UI updates}
-% Mention extra data needed to handle UI not optimistically
-
 \subsection{Granular state handling}
 % Mention granular loaders, two strategies creating map and creating a type that has DTO data and UI stuff like loaders
 This "To do" web application has a few user initiated operations that need to wait for the server to send a response:
