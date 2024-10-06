@@ -1,6 +1,13 @@
 \section{To do app}
 
-A "To do" app is a simple software that handles reminders for the user. Implementing one is a typical way to try out new frontend frameworks and languages, and allows to explore how the Elm language feels when dealing with a simple web application.
+A "To do" app is a simple software that handles tasks for the user. Implementing one is a typical way to try out new frontend frameworks and languages, and allows to explore how the Elm language feels when dealing with a simple one-page web application. \\
+This "To do" application allows the user to:
+\begin{itemize}
+    \item Create tasks
+    \item Mark tasks as done or undone
+    \item Delete tasks
+    \item Edit existing tasks
+\end{itemize}
 
 \subsection{Project structure}
 
@@ -73,10 +80,10 @@ This "To do" web application has a few user initiated operations that need to wa
 \end{itemize}
 These interactions change the state of a single entity in the application, it would therefore make sense to render a UI element representing the loading state that is specific to the operation and, if existing, entity, the interaction concerned. These being the \textit{To do} box in the case of an update or deletion and the \textit{To do} creation box otherwise.\\
 
-In Elm the shape of the whole state needs to be specified upfront, as there is no concept of local state. This makes it convenient to create a global loader, using a simple \texttt{Int} to track how many operations are currently in a loading state and rendering it conditionally. \\
+In Elm the shape of the whole state needs to be specified upfront \footnote{Except when using \texttt{Html.map} and therefore the \textit{Nested TEA} pattern}\cite{noauthor_elm_nodate}, as there is no concept of local state. This makes it convenient to create a global loader, using a simple \texttt{Int} to track how many operations are currently in a loading state and rendering it conditionally. \\
 But if we want to make this granular, we have a few options, each needing some amount of added boilerplate code:
 \begin{enumerate}
-    \item Wrapping each \texttt{Todo} entity in another type, containing the necessary extra state for it to be handled within the UI: \\
+    \item Wrapping each \texttt{Todo} entity in another type, containing the necessary extra state for it to be handled within the UI:
     \begin{minted}{elm}
 type alias UITodo =
 { loading : Bool
