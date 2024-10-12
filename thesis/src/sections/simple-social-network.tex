@@ -83,5 +83,60 @@ Using this simple helper function, we can compute the new page in the \texttt{Ur
 \subsection{Using ports to access local storage}
 % Mention that existing solution like localstorage packages still rely on ports
 
+Another aspect of this section's app that was not present in the previous one is client-side data retention. If a user logs in the application, they should be able to stay logged in after the tab and browser session is closed. Since this is not a real world application but a sample one, authentication was implemented by including the header \texttt{X-User-Header} with the user ID as value in the API calls that need it.\\
+In applications that run in the browser, data retention is typically achieved through the \texttt{localStorage} web API\cite{noauthor_window_nodate}, which allows developers to set and get values from a key/value store. Since Elm does not allow to directly call JavaScript functions and does not provide a first-party package to interact with the native \texttt{localStorage} API, it's necessary to use the standard way to interoperate with JavaScript from within the Elm runtime: ports and flags.
+
+In the \texttt{Ports.elm} file we declare the ports:
+\begin{minted}{elm}
+port storeToken : String -> Cmd msg
+port removeToken : () -> Cmd msg
+port noInteractionTokenChange : (Maybe String -> msg) -> Sub msg
+\end{minted}
+
+Three ports exist, all concerning events related to the authentication token:
+\begin{itemize}
+    \item \texttt{storeToken} is used when after a successful login response
+    \item \texttt{removeToken} is used after a logout
+    \item \texttt{noInteractionTokenChange} is used when the token changes but the change was not triggered by some action in the current tab (this can happen if the user is using the application in multiple tabs) 
+\end{itemize}
+Ports allows message passing from JavaScript to Elm and viceversa, while flags allow proper initialization of state that is controlled outside of the Elm runtime, such as the authorization token in this case.\\
+
+The \texttt{init} function's signature of this section's app includes a \texttt{Flags} type, containing the current authorization token at the start of the Elm runtime. 
+\begin{minted}{elm}
+type alias Flags =
+    { authToken : Maybe String
+    }
+[...]
+init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
+[...]
+\end{minted}
+
+This way we always know that within Elm we're always starting the application with whatever token the user currently holds in their browser's \texttt{localStorage}.\\
+
+Interactions with the token are achieved through ports. The use of ports on the JavaScript side is straightforward: a \texttt{ports} field is available in the \texttt{ElmApp} that is instantiated to start the Elm runtime:
+\begin{minted}{js}
+app.ports.storeToken?.subscribe((t) => {
+    authToken.set(t);
+});
+\end{minted}
+On the Elm side, ports that allow message passing from Elm to JavaScript are called like normal functions. The code below contains the commands returned in the \texttt{update} function following a successful login:
+\begin{minted}{elm}
+Cmd.batch
+    [ storeToken user.id
+    , Nav.pushUrl model.key "/"
+    , Api.getPosts Pagination.defaultPaginationData user.id Nothing postsToMsg
+    ]
+\end{minted}
+Calling \texttt{storeToken} triggers the callback that uses \texttt{localStorage} API on the JavaScript side.
+
+JavaScript to Elm ports are associated with a message through the \texttt{subscriptions} field of the \texttt{main} function.
+\begin{minted}{elm}
+subscriptions _ =
+    noInteractionTokenChange TokenChangedInOtherTab
+\end{minted}
+In this case we'are associating the \texttt{noInteractionTokenChange} port JavaScript message to the internal \texttt{TokenChangedInOtherTab} message, which can be handled however the application needs to in the \texttt{update} function
+
+
 \subsection{Login/Signup}
 % mention the fact that login could have easily been a component in some other framework
