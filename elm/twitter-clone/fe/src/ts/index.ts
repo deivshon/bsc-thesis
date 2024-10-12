@@ -1,5 +1,3 @@
-import { safePorts } from "./ports";
-
 const authTokenKey = "authToken";
 const authToken = {
     set: (token: string): void => localStorage.setItem(authTokenKey, token),
@@ -21,13 +19,12 @@ document.addEventListener("DOMContentLoaded", () => {
             authToken: authToken.retrieve(),
         },
     });
-    const ports = safePorts(app);
 
-    ports.storeToken?.subscribe((t) => {
+    app.ports.storeToken?.subscribe((t) => {
         authToken.set(t);
     });
 
-    ports.removeToken?.subscribe(() => {
+    app.ports.removeToken?.subscribe(() => {
         authToken.unset();
     });
 
@@ -36,6 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        ports.noInteractionTokenChange?.send(e.newValue);
+        app.ports.noInteractionTokenChange?.send(e.newValue);
     });
 });
