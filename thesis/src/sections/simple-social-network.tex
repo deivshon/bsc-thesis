@@ -1,5 +1,5 @@
 \section{Simple Social Network}
-The \textit{Simple Social Network} app is a small web application that allows users to:
+The "Simple Social Network" app is a small web application that allows users to:
 \begin{itemize}
     \item Create and log in to different accounts
     \item Create textual posts
@@ -7,11 +7,78 @@ The \textit{Simple Social Network} app is a small web application that allows us
     \item See recent posts in the homepage
     \item See recent user specific posts in user pages
 \end{itemize}
-This allows to explore what patterns can be used to handle different pages within the same SPA and interoperate with JavaScript
+This allows to explore what patterns can be used to handle different routes within the same SPA and interoperate with JavaScript
 
 \subsection{URLs handling}
+Contrary the the previous section's \textit{To do} app, within this application we need to handle different routes. While some frontend frameworks leave routing to third party libraries, Elm has a standardized way to deal with this ubiquitous problem.\\
 
-\subsection{Handling state on URLs change}
+Typically, within the \texttt{Model} of a routed Elm SPA a \texttt{page} field contains the current page type and the related state needed. For this application we only have four pages:
+\begin{minted}{elm}
+type Page
+    = Login
+    | Home
+    | UserPage String
+    | NotFound
+\end{minted}
+The login and home page don't need any extra state to be properly handled, while, since user pages are user specific, a \texttt{String} containing the related user ID is needed to then fetch the proper user posts.
+
+The \texttt{main} function for this section's application looks like this
+
+\begin{minted}{elm}
+main =
+    Browser.application
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        , onUrlRequest = LinkClicked
+        , onUrlChange = UrlChanged
+        }
+\end{minted}
+
+\texttt{onUrlChange} and \texttt{onUrlRequest} are the fields that allow to setup routing handling.\\
+
+\texttt{onUrlRequest} accepts a message constructor that takes in a \texttt{Browser.UrlRequest} and \texttt{onUrlChange} accepts a message constructor that takes in a \texttt{Url.Url}, in our case, respectively, \texttt{LinkClicked} and \texttt{UrlChanged}.\\
+\texttt{onUrlRequest} gets triggered when a link is clicked, made possible by Elm's internals which intercept navigations, and \texttt{onUrlChange} is instead triggered when a new internal URL is pushed through \texttt{Nav.pushUrl}.\\
+Like all other messages, we can handle both within the \texttt{update} function.\\
+
+While a link click can be handled any way that is needed, this is the typical way to do so in standard SPAs if one does not need to prevent navigation to certain URLs before doing some action first\cite{noauthor_navigation_nodate}:
+\begin{minted}{elm}
+case msg of
+    LinkClicked urlRequest ->
+        case urlRequest of
+            Browser.Internal url ->
+                ( model, Nav.pushUrl model.key (Url.toString url) )
+
+            Browser.External href ->
+                ( model, Nav.load href )
+\end{minted}
+
+Within the \texttt{LinkClicked} branch of the \texttt{msg} matching, we check if the link is external or internal, and either, respectively, directly load the external link or push the new internal one, thereby triggering a \texttt{UrlChanged} message in this last case.\\
+When this new message is intercepted, we now need to handle the actual internal route change:
+\begin{minted}{elm}
+    case msg of
+[...]
+        UrlChanged url ->
+            let
+                newPage =
+                    routeUrl url
+            in
+[...]
+routeUrl url =
+    Maybe.withDefault NotFound (Parser.parse routeParser url)
+    
+routeParser =
+    oneOf
+        [ Parser.map Home Parser.top
+        , Parser.map Login (Parser.s "login")
+        , Parser.map UserPage (Parser.s "users" </> Parser.string)
+        ]
+\end{minted}
+The page the model should contain after the URL change is computed using  the official \texttt{URL} package's \texttt{Parser} module. \texttt{Home} corresponds to the root URL, \texttt{Login} to the \texttt{/login} route and \texttt{UserPage} to any route of the format \texttt{/users/:userId}.\\
+Using this simple helper function, we can compute the new page in the \texttt{UrlChanged} branch of the \texttt{update} function, and, if needed, change the application's state based on it.
+
+% ? \subsection{Handling state on URLs change}
 
 \subsection{Using ports to access local storage}
 % Mention that existing solution like localstorage packages still rely on ports
