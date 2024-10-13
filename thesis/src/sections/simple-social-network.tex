@@ -128,7 +128,7 @@ Cmd.batch
     , Api.getPosts Pagination.defaultPaginationData user.id Nothing postsToMsg
     ]
 \end{minted}
-Calling \texttt{storeToken} triggers the callback that uses \texttt{localStorage} API on the JavaScript side.
+Calling \texttt{storeToken} triggers the callback that uses the \texttt{localStorage} API on the JavaScript side.
 
 JavaScript to Elm ports are associated with a message through the \texttt{subscriptions} field of the \texttt{main} function.
 \begin{minted}{elm}
@@ -140,3 +140,48 @@ In this case we'are associating the \texttt{noInteractionTokenChange} port JavaS
 
 \subsection{Login/Signup}
 % mention the fact that login could have easily been a component in some other framework
+
+The \texttt{Login} page that was shown before contains the login form, which means it must handle updates to the input data and trigger the proper API call once the user submits said data. The \texttt{Main.elm} file coordinates all state updates and commands, and the only action that we need to handle explicitly there is the submit action, the rest (updates to the current username/password input data) would only be overhead.\\
+It therefore makes sense to create a new module that will contain the types, updates, messages and logic strictly related to the login data. We start by defining \texttt{UserAuthData} and \texttt{UserAuthMsg}:
+\begin{minted}{elm}
+type alias UserAuthData =
+    { username : String
+    , password : String
+    , error : Bool
+    }
+
+type UserAuthMsg
+    = UsernameChange String
+    | PasswordChange String
+    | Submit
+\end{minted}
+
+Within the same module, we can then create the view and update function related to this type and message:
+\begin{minted}{elm}
+update : UserAuthMsg -> UserAuthData -> UserAuthData
+update msg userAuthData =
+[...]
+viewUserAuth : String -> UserAuthData -> (UserAuthMsg -> msg) -> H.Html msg
+viewUserAuth label userAuthData onAction =
+\end{minted}
+
+By exposing these functions and types, we can then easily use this data within our \texttt{Main.elm} file.\\
+Specifically, a field of \texttt{UserAuthData} type is going to be included in the model, and a \texttt{Msg} of type \texttt{UserAuthMsg}, while the related helper functions are going to be used within the \texttt{update} and view functions.\\
+
+This powerful pattern allows us to reuse the module's functions for different instances of the same data type. In fact, in this section's application the sign in data is the exact same as the login data, a simple username and password form.\\ Since we already have all the helper functions needed, we just need to include another \texttt{UserAuthData} field in our model and another \texttt{UserAuthMsg}  \texttt{Msg}, this way we can use the same \texttt{UserAuth.update} function when receiving the different login and sign up related messages:
+\begin{minted}{elm}  
+type alias Model =
+    [...]
+    , loginData : UserAuth.UserAuthData
+    , signupData : UserAuth.UserAuthData
+    [...]
+    }
+[...]
+type Msg
+    [...]
+    | UserAuthMsg UserAuth.UserAuthMsg
+    | SignupMsg UserAuth.UserAuthMsg
+    [...]
+\end{minted}
+
+While the \texttt{UserAuth} module is not a component, the only thing differentiating it from one is the need to specify the state and messages explicitly in the \texttt{Main.elm} module, instead of encapsulating them completely and allow message passing through other means. Nonetheless, this pattern allowed the sign up form to be seamlessly created reusing existing types and functions.
