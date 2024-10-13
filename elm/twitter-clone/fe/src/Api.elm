@@ -3,9 +3,9 @@ module Api exposing (..)
 import Http
 import Json.Decode as JD
 import Like
-import Login
 import Post
 import User
+import UserAuth
 
 
 type alias ApiError =
@@ -31,20 +31,20 @@ apiErrorDecoder =
         (JD.field "code" JD.string)
 
 
-login : Login.LoginData -> (Result Http.Error User.User -> msg) -> Cmd msg
+login : UserAuth.UserAuthData -> (Result Http.Error User.User -> msg) -> Cmd msg
 login content toMsg =
     Http.post
         { url = "http://localhost:3001/auth/login"
-        , body = Http.jsonBody (Login.loginDataEncoder content)
+        , body = Http.jsonBody (UserAuth.userAuthDataEncoder content)
         , expect = Http.expectJson toMsg User.userDecoder
         }
 
 
-signup : Login.LoginData -> (Result Http.Error User.User -> msg) -> Cmd msg
+signup : UserAuth.UserAuthData -> (Result Http.Error User.User -> msg) -> Cmd msg
 signup content toMsg =
     Http.post
         { url = "http://localhost:3001/users"
-        , body = Http.jsonBody (Login.loginDataEncoder content)
+        , body = Http.jsonBody (UserAuth.userAuthDataEncoder content)
         , expect = Http.expectJson toMsg User.userDecoder
         }
 

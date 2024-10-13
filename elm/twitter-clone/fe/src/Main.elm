@@ -6,13 +6,13 @@ import Browser.Navigation as Nav
 import Html as H exposing (Html)
 import Html.Events as HE
 import Http
-import Login
 import Models.Pagination as Pagination
 import Ports.Ports exposing (noInteractionTokenChange, removeToken, storeToken)
 import Post
 import Url
 import Url.Parser as Parser exposing ((</>), (<?>), Parser, oneOf)
 import User
+import UserAuth
 
 
 type alias Flags =
@@ -42,8 +42,8 @@ type alias Model =
     , url : Url.Url
     , page : Page
     , authToken : Maybe String
-    , loginData : Login.LoginData
-    , signupData : Login.LoginData
+    , loginData : UserAuth.UserAuthData
+    , signupData : UserAuth.UserAuthData
     , postsData : Post.PostsData
     , userPostsData : Post.PostsData
     , newPost : String
@@ -175,8 +175,8 @@ init flags url key =
       , url = url
       , page = page
       , authToken = flags.authToken
-      , loginData = Login.defaultLoginData
-      , signupData = Login.defaultLoginData
+      , loginData = UserAuth.defaultUserAuthData
+      , signupData = UserAuth.defaultUserAuthData
       , postsData = Post.defaultPostsData
       , userPostsData = Post.defaultPostsData
       , newPost = Post.defaultNewPost
@@ -187,8 +187,8 @@ init flags url key =
 
 type Msg
     = LinkClicked Browser.UrlRequest
-    | LoginMsg Login.LoginMsg
-    | SignupMsg Login.LoginMsg
+    | LoginMsg UserAuth.UserAuthMsg
+    | SignupMsg UserAuth.UserAuthMsg
     | LoginResponse (Result Http.Error User.User)
     | UrlChanged Url.Url
     | TokenChangedInOtherTab (Maybe String)
@@ -249,7 +249,7 @@ update msg model =
 
         LoginMsg loginMsg ->
             case loginMsg of
-                Login.Submit ->
+                UserAuth.Submit ->
                     let
                         loginData =
                             model.loginData
@@ -259,7 +259,7 @@ update msg model =
                     )
 
                 _ ->
-                    ( { model | loginData = Login.update loginMsg model.loginData }
+                    ( { model | loginData = UserAuth.update loginMsg model.loginData }
                     , Cmd.none
                     )
 
@@ -268,8 +268,8 @@ update msg model =
                 Ok user ->
                     ( { model
                         | authToken = Just user.id
-                        , loginData = Login.defaultLoginData
-                        , signupData = Login.defaultLoginData
+                        , loginData = UserAuth.defaultUserAuthData
+                        , signupData = UserAuth.defaultUserAuthData
                         , postsData = Post.defaultPostsData
                         , userPostsData = Post.defaultPostsData
                       }
@@ -430,7 +430,7 @@ update msg model =
 
         SignupMsg signupMsg ->
             case signupMsg of
-                Login.Submit ->
+                UserAuth.Submit ->
                     let
                         signupData =
                             model.signupData
@@ -440,7 +440,7 @@ update msg model =
                     )
 
                 _ ->
-                    ( { model | signupData = Login.update signupMsg model.signupData }
+                    ( { model | signupData = UserAuth.update signupMsg model.signupData }
                     , Cmd.none
                     )
 
@@ -505,8 +505,8 @@ viewPage model =
 
         Login ->
             H.div []
-                [ Login.viewLogin "Login" model.loginData LoginMsg
-                , Login.viewLogin "Signup" model.signupData SignupMsg
+                [ UserAuth.viewUserAuthForm "Login" model.loginData LoginMsg
+                , UserAuth.viewUserAuthForm "Signup" model.signupData SignupMsg
                 ]
 
         UserPage _ ->
