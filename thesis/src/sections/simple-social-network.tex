@@ -7,7 +7,7 @@ The "Simple Social Network" app is a small web application that allows users to:
     \item See recent posts in the homepage
     \item See recent user specific posts in user pages
 \end{itemize}
-This allows to explore what patterns can be used to handle different routes within the same SPA and interoperate with JavaScript
+This allows to explore what Elm patterns can be used to handle different routes within the same SPA and interoperate with JavaScript.
 
 \subsection{URLs handling}
 Contrary the the previous section's \textit{To do} app, within this application we need to handle different routes. While some frontend frameworks leave routing to third party libraries, Elm has a standardized way to deal with this ubiquitous problem.\\
@@ -42,7 +42,7 @@ main =
 \texttt{onUrlRequest} gets triggered when a link is clicked, made possible by Elm's internals which intercept navigations, and \texttt{onUrlChange} is instead triggered when a new internal URL is pushed through \texttt{Nav.pushUrl}.\\
 Like all other messages, we can handle both within the \texttt{update} function.\\
 
-While a link click can be handled any way that is needed, this is the typical way to do so in standard SPAs if one does not need to prevent navigation to certain URLs before doing some action first\cite{noauthor_navigation_nodate}:
+While a link click can be handled any way that is needed, tehre's a typical way to do so in standard SPAs if one does not need to prevent navigation to certain URLs before doing some action first\cite{noauthor_navigation_nodate}:
 \begin{minted}{elm}
 case msg of
     LinkClicked urlRequest ->
@@ -55,6 +55,7 @@ case msg of
 \end{minted}
 
 Within the \texttt{LinkClicked} branch of the \texttt{msg} matching, we check if the link is external or internal, and either, respectively, directly load the external link or push the new internal one, thereby triggering a \texttt{UrlChanged} message in this last case.\\
+
 When this new message is intercepted, we now need to handle the actual internal route change:
 \begin{minted}{elm}
     case msg of
@@ -84,7 +85,8 @@ Using this simple helper function, we can compute the new page in the \texttt{Ur
 % Mention that existing solution like localstorage packages still rely on ports
 
 Another aspect of this section's app that was not present in the previous one is client-side data retention. If a user logs in the application, they should be able to stay logged in after the tab and browser session is closed. Since this is not a real world application but a sample one, authentication was implemented by including the header \texttt{X-User-Header} with the user ID as value in the API calls that need it.\\
-In applications that run in the browser, data retention is typically achieved through the \texttt{localStorage} web API\cite{noauthor_window_nodate}, which allows developers to set and get values from a key/value store. Since Elm does not allow to directly call JavaScript functions and does not provide a first-party package to interact with the native \texttt{localStorage} API, it's necessary to use the standard way to interoperate with JavaScript from within the Elm runtime: ports and flags.
+
+In applications that run in the browser, data retention is typically achieved through the \texttt{localStorage} web API\cite{noauthor_window_nodate}, which allows developers to set and get values from a key/value store. Since Elm does not allow to directly call JavaScript functions and does not provide a first-party package to interact with the native \texttt{localStorage} API, it's necessary to use the standard way to interoperate with JavaScript within the Elm runtime: ports and flags.
 
 In the \texttt{Ports.elm} file we declare the ports:
 \begin{minted}{elm}
@@ -97,7 +99,7 @@ Three ports exist, all concerning events related to the authentication token:
 \begin{itemize}
     \item \texttt{storeToken} is used when after a successful login response
     \item \texttt{removeToken} is used after a logout
-    \item \texttt{noInteractionTokenChange} is used when the token changes but the change was not triggered by some action in the current tab (this can happen if the user is using the application in multiple tabs) 
+    \item \texttt{noInteractionTokenChange} is used when the token changes but the change was not triggered by any action in the current tab (this can happen if the user is using the application in multiple tabs) 
 \end{itemize}
 Ports allows message passing from JavaScript to Elm and viceversa, while flags allow proper initialization of state that is controlled outside of the Elm runtime, such as the authorization token in this case.\\
 
@@ -112,15 +114,15 @@ init flags url key =
 [...]
 \end{minted}
 
-This way we always know that within Elm we're always starting the application with whatever token the user currently holds in their browser's \texttt{localStorage}.\\
+This way we know we're always starting the Elm runtime with whatever token the user currently holds in their browser's \texttt{localStorage}, if any.\\
 
-Interactions with the token are achieved through ports. The use of ports on the JavaScript side is straightforward: a \texttt{ports} field is available in the \texttt{ElmApp} that is instantiated to start the Elm runtime:
+Interactions with the token are achieved through ports. The use of Elm to JavaScript ports on the JavaScript side is straightforward: a \texttt{ports} field is available in the \texttt{ElmApp} that is instantiated to start the Elm runtime, which allow subscriptions:
 \begin{minted}{js}
 app.ports.storeToken?.subscribe((t) => {
     authToken.set(t);
 });
 \end{minted}
-On the Elm side, ports that allow message passing from Elm to JavaScript are called like normal functions. The code below contains the commands returned in the \texttt{update} function following a successful login:
+On the Elm side, the same ports are called like normal functions. The code below contains the commands returned in the \texttt{update} function following a successful login:
 \begin{minted}{elm}
 Cmd.batch
     [ storeToken user.id
@@ -128,21 +130,31 @@ Cmd.batch
     , Api.getPosts Pagination.defaultPaginationData user.id Nothing postsToMsg
     ]
 \end{minted}
-Calling \texttt{storeToken} triggers the callback that uses the \texttt{localStorage} API on the JavaScript side.
+Calling \texttt{storeToken} triggers the callback that uses the \texttt{localStorage} API on the JavaScript side.\\
 
 JavaScript to Elm ports are associated with a message through the \texttt{subscriptions} field of the \texttt{main} function.
 \begin{minted}{elm}
 subscriptions _ =
     noInteractionTokenChange TokenChangedInOtherTab
 \end{minted}
-In this case we'are associating the \texttt{noInteractionTokenChange} port JavaScript message to the internal \texttt{TokenChangedInOtherTab} message, which can be handled however the application needs to in the \texttt{update} function
+In this case we'are associating the \texttt{noInteractionTokenChange} port to the internal \texttt{TokenChangedInOtherTab} message, which can be handled however the application needs to in the \texttt{update} function. The \texttt{TokenChangedInOtherTab} message is sent whenever new data is pushed to the port from the JavaScript side:
+\begin{minted}{js}
+window.addEventListener("storage", (e) => {
+    if (e.key !== authTokenKey) {
+        return;
+    }
+
+    app.ports.noInteractionTokenChange?.send(e.newValue);
+});
+\end{minted}
+Using only a few lines of code, we were easily able to use a web API not available inside the Elm runtime.
 
 
 \subsection{Login/Signup}
 % mention the fact that login could have easily been a component in some other framework
 
 The \texttt{Login} page that was shown before contains the login form, which means it must handle updates to the input data and trigger the proper API call once the user submits said data. The \texttt{Main.elm} file coordinates all state updates and commands, and the only action that we need to handle explicitly there is the submit action, the rest (updates to the current username/password input data) would only be overhead.\\
-It therefore makes sense to create a new module that will contain the types, updates, messages and logic strictly related to the login data. We start by defining \texttt{UserAuthData} and \texttt{UserAuthMsg}:
+It therefore makes sense to create a new module that contains the types, updates, messages and logic strictly related to the login data. We start by defining \texttt{UserAuthData} and \texttt{UserAuthMsg}:
 \begin{minted}{elm}
 type alias UserAuthData =
     { username : String

@@ -12,9 +12,9 @@ This "To do" application allows the user to:
 \subsection{Project structure}
 
 % Mention the idea of dividing the project into type-based files and not components
-In more traditional frontend frameworks the code is typically split up in many self-containing parts called "components". This division creates a natural structure to be followed: each component is placed in a separate file. In some frameworks such as Svelte this is enforced, as no more than one component can exist per file \cite{noauthor_svelte_nodate}. Since in Elm components do not exist, this project structure can't be adopted. Instead, what the official Elm guide suggests is to divide your code into modules that have a central type \cite{noauthor_structure_nodate} .\\
+In more traditional frontend frameworks the code is typically split up in many self-containing parts called components. This division creates a natural structure to be followed: each component is placed in a separate file. In some frameworks such as Svelte this is enforced, as no more than one component can exist per file \cite{noauthor_svelte_nodate}. Since in Elm components do not exist, this project structure can't be adopted. Instead, what the official Elm guide suggests is to divide your code into modules that have a central type \cite{noauthor_structure_nodate} .\\
 
-Here we're only going to have one page in the web app and therefore there's only going to be a single \texttt{Model}, so we're going to divide the code into a \texttt{Main.elm}, which will handle all of the TEA cycle, an \texttt{Api.elm} module, which will contain all of the functions that fetch or send data to the server, and a \texttt{Todo.elm}, containing all of the helper functions needed to handle the \texttt{Todo} data type in the application
+In this section's app we're going to have only one page and therefore there's going to be a single \texttt{Model}, so the code will be divided into a \texttt{Main.elm} file, which will handle the TEA initialization and update, an \texttt{Api.elm} file, which will contain all of the functions that fetch or send data to the server, and a \texttt{Todo.elm} file, containing all of the helper functions needed to handle the \texttt{Todo} data type in the application
 
 % //TODO present the decoding/encoding function too
 \subsection{API Layer}
@@ -62,23 +62,24 @@ updateTodo id todoUpdate toMsg =
 \end{minted}
 
 \begin{sloppypar}
-Since this is using the HTTP PATCH method, wrapping the more generic \texttt{Http.request} is needed, which requires to specify a few more parameters that are not interesting for the sake of this section.\\
-This function takes three arguments instead, the \texttt{id} of the \texttt{Todo} entity the user wants to update, the \texttt{todoUpdate}, containing the data fields/values that need to be changed on the server, and the usual \texttt{toMsg} function to handle whatever the result is.\\
+Since this is using the \texttt{PATCH} method, wrapping the more generic \texttt{Http.request} is needed, which requires to specify a few more parameters that are not interesting for the sake of this section.\\
+This function takes three arguments instead, the \texttt{id} of the \texttt{Todo} entity the user wants to update, the \texttt{todoUpdate}, containing the data fields and related values that need to be changed on the server, and the usual \texttt{toMsg} function to handle whatever the result is.\\
 This time, since a body is being passed to the function, we need to make sure that whatever data we're sending to the endpoint is properly encoded, for this reason a JSON encoder that accepts data of the type \texttt{TodoUpdateBody} is used, the result is then passed along to \texttt{Http.jsonBody}, which allows the \texttt{Http} library to send a proper HTTP call to the server based on what type the body is.
 \end{sloppypar}
 
 \subsection{Granular state handling}
 % Mention granular loaders, two strategies creating map and creating a type that has DTO data and UI stuff like loaders
-This \textit{To do} web application has a few user initiated operations that need to wait for the server to send a response:
+This section's application has a few user initiated operations that need to wait for the server to send a response:
 \begin{itemize}
     \item Creation of a \textit{To do} entity
     \item Deletion of \textit{To do} entity
     \item Update of a \textit{To do} entity
 \end{itemize}
-These interactions change the state of a single entity in the application, it would therefore make sense to render a UI element representing the loading state that is specific to the operation and, if existing, entity, the interaction concerned. These being the \textit{To do} box in the case of an update or deletion and the \textit{To do} creation box otherwise.\\
+These interactions change the state of a single entity in the application, it would therefore make sense to render a UI element representing the loading state that is specific to the operation and, if existing, the entity the interaction concerned.
 
-In Elm the shape of the whole state needs to be specified upfront \footnote{Except when using \texttt{Html.map} and therefore the \textit{Nested TEA} pattern}\cite{noauthor_elm_nodate}, as there is no concept of local state. This makes it convenient to create a global loader, using a simple \texttt{Int} to track how many operations are currently in a loading state and rendering it conditionally. \\
-But if we want to make this granular, we have a few options, each needing some amount of added boilerplate code:
+In Elm the shape of the whole state needs to be specified upfront \footnote{Except when using \texttt{Html.map} and therefore the \textit{Nested TEA} pattern}\cite{noauthor_elm_nodate}, as there is no concept of local state. This makes it convenient to create a global loader, using a simple \texttt{Int} to track how many operations are currently in a loading state and rendering it conditionally. This was what chosen in the end for this section's app, but other possibilities were explored.\\
+
+If we want to make the loading states granular, we have a few options, each needing some amount of added boilerplate code:
 \begin{enumerate}
     \item Wrapping each \texttt{Todo} entity in another type, containing the necessary extra state for it to be handled within the UI:
     \begin{minted}{elm}
@@ -94,7 +95,6 @@ type alias LoadingStates =
     \end{minted}
     and storing it in the \texttt{Model}
 \end{enumerate} 
-
-In terms of type safety, the first option is better as the loading state is tied to the \texttt{Todo} itself, thereby eliminating one indirection layer that has the potential to not be handled correctly (by, for instance, inserting a wrong \texttt{id} as a key in the \texttt{Dict}). \\
-Starting from a version of the app with no loading state indicators, it is also the one that takes more refactoring, since in both the \texttt{LoadingStates} and global loader cases there is no need to modify how the \texttt{Todo} entities are passed to the various helper functions. \\
+In terms of type safety, the first option is better as the loading state is tied to the \texttt{Todo} itself, thereby eliminating one indirection layer that has the potential to not be handled correctly (by, for instance, inserting a wrong \texttt{id} as a key in the \texttt{Dict}).\\
+Starting from a version of the app with no loading state indicators, it is also the one that takes more refactoring, since in both the \texttt{LoadingStates} and global loader cases there is no need to modify how the \texttt{Todo} entities are passed to the various helper functions.\\
 
