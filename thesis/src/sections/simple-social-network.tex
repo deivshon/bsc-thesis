@@ -39,10 +39,10 @@ main =
 \texttt{onUrlChange} and \texttt{onUrlRequest} are the fields that allow to setup routing handling.\\
 
 \texttt{onUrlRequest} accepts a message constructor that takes in a \texttt{Browser.UrlRequest} and \texttt{onUrlChange} accepts a message constructor that takes in a \texttt{Url.Url}, in our case, respectively, \texttt{LinkClicked} and \texttt{UrlChanged}.\\
-\texttt{onUrlRequest} gets triggered when a link is clicked, made possible by Elm's internals which intercept navigations, and \texttt{onUrlChange} is instead triggered when a new internal URL is pushed through \texttt{Nav.pushUrl}.\\
+\texttt{onUrlRequest} gets triggered when a link is clicked, made possible by Elm's internals which intercept navigations, and \texttt{onUrlChange} is instead triggered when a new internal URL is pushed from the Elm runtime through \texttt{Nav.pushUrl}.\\
 Like all other messages, we can handle both within the \texttt{update} function.\\
 
-While a link click can be handled any way that is needed, tehre's a typical way to do so in standard SPAs if one does not need to prevent navigation to certain URLs before doing some action first\cite{noauthor_navigation_nodate}:
+While a link click can be handled any way that is needed, there's a typical way to do so in standard SPAs if one does not need to prevent navigation to certain URLs before doing some action first\cite{noauthor_navigation_nodate}:
 \begin{minted}{elm}
 case msg of
     LinkClicked urlRequest ->
@@ -59,12 +59,13 @@ Within the \texttt{LinkClicked} branch of the \texttt{msg} matching, we check if
 When this new message is intercepted, we now need to handle the actual internal route change:
 \begin{minted}{elm}
     case msg of
-[...]
+    [...]
         UrlChanged url ->
             let
                 newPage =
                     routeUrl url
             in
+            [...]
 [...]
 routeUrl url =
     Maybe.withDefault NotFound (Parser.parse routeParser url)
