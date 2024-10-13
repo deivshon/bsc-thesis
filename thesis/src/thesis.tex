@@ -58,9 +58,6 @@
 \DeclareUnicodeCharacter{2009}{ }
 \DeclareUnicodeCharacter{2264}{$\leq$}
 
-% If you want to use ducks as page numbering
-\usepackage{tikzducks}
-
 \newcommand{\rom}[1]{\uppercase\expandafter{\romannumeral #1\relax}}
 
 \begin{document}
@@ -79,6 +76,7 @@
 \makeatother
 
 \newgeometry{left=2cm, right=2cm}
+\pagenumbering{gobble}
 \input{sections/frontispiece}
 \restoregeometry
 \topmargin=-1cm
