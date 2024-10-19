@@ -28,5 +28,106 @@ Elm is meant to be easy to learn and use. This is the reason the language itself
 
 \subsection{Language features}
 % ADTs, pattern matching, strong inference
+\subsubsection{Base types}
+Elm provides the following primitive types:
+\begin{itemize}
+    \item \texttt{String}
+    \item \texttt{Int}
+    \item \texttt{Float}
+    \item \texttt{Bool}
+\end{itemize}
+The generic \texttt{List} type is also available to create lists of a given type.\\
+
+These types can be used in functions, which in Elm are treated like normal values and can be passed and accepted as parameters.
+
+\subsubsection{Type annotations and inference}
+Elm supports type annotations, these help clarify intent and allow readers to understand the function signature by glancing at it instead of relying on IDE tools or needing to go through the implementation:
+\begin{minted}{elm}
+addToListItems : Int -> List Int -> List Int
+addToListItems n ls =
+    List.map (\x -> x + n) ls
+\end{minted}
+
+Elm's LSP supports a "add type annotation" action. Using it on the unannotated version of the function yields a slightly different result:
+\begin{minted}{elm}
+addToListItems : number -> List number -> List number
+addToListItems n ls =
+    List.map (\x -> x + n) ls
+\end{minted}
+\texttt{number} is neither a \texttt{Float} nor an \texttt{Int} type, instead it's a type that accepts both. When adding a type annotation using the LSP action, Elm adds the same one it computes when performing type inference, which is the widest the implementation can handle.\\
+In fact, both \texttt{Float}s and \texttt{Int}s can be passed as the \texttt{addToListItems} function's first parameter, since the \texttt{+} operator in Elm supports both.
+
+\subsubsection{Records}
+Elm supports records, single types containing multiple named components. For instance, without records, if we needed to write a function that renders a \textit{Todo} item, we would have to write it like this:
+\begin{minted}{elm}
+viewTodo id content createdAt updatedAt done =
+    ...
+\end{minted}
+When types in the application domain grow significantly, writing all components separately becomes cumbersome. Instead, we can use a record and accept that, accessing its components with the dot notation:
+\begin{minted}{elm}
+type alias Todo =
+    { id : String
+    , content : String
+    , createdAt : Int
+    , updatedAt : Int
+    , done : Bool
+    }
+
+viewTodo todo =
+    ...
+
+isLongTodo todo =
+    String.length todo.content > 50
+\end{minted}
+
+\subsubsection{Sum types}
+Sum types, commonly referred to within the Elm community  as \textit{custom types} \cite{noauthor_custom_nodate}, are also supported, increasing the type system's expressiveness.\\
+
+They can be used to create regular enums:
+\begin{minted}{elm}
+type PackageDeliveryStatus
+    = InWarehouse
+    | InProgress
+    | Delivered
+\end{minted}
+
+But the types specified may also be associated with an arbitrary number of other types. For instance, we may want to specify when the \texttt{InProgress} and \texttt{Delivered} statuses were reached using a timestamp, and the final delivery address:
+\begin{minted}{elm}
+type PackageDeliveryStatus
+    = InWarehouse
+    | InProgress Int
+    | Delivered Int String
+\end{minted}
+
+An instance of a sum type can be accessed using the \texttt{case/of} pattern matching syntax:
+\begin{minted}{elm}
+isOutOfWarehouse status =
+    case status of
+        InWarehouse ->
+            False
+
+        _ ->
+            True
+\end{minted}
+
+The \texttt{\_} character matches all remaining possibilities. Since Elm's pattern matching is required to be exhaustive, leaving any option not covered by a branch results in a compile time error.\\
+
+Pattern matching also allows to access the values inside the type the sum type instance contains:
+\begin{minted}{elm}
+getStatusString status =
+    case status of
+        InWarehouse ->
+            "In warehouse"
+
+        InProgress ts ->
+            "In progress since epoch " ++ String.fromInt ts
+
+        Delivered ts address ->
+            "Delivered to " ++ address ++ " at epoch " ++ String.fromInt ts
+\end{minted}
+
+\subsubsection{Error handling}
 \subsection{The Elm Architecture (TEA)}
 % Mention impossibility of tying messages with a particular state, which often result in boilerplate (e.g. what do you do if you get a message that prompts you to fetch stuff but you don't have a token loaded? You need to handle that case for all messages if you have some token in your state. Solution is to pass the token in the message but this means you have to drill the token down to all components that use it)
+\subsubsection{Structure}
+\subsubsection{Internals and performance}
