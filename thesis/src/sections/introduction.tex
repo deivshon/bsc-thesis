@@ -12,9 +12,20 @@ For this reason, many of the languages that transpile to JavaScript include stat
 Other languages such as PureScript, ReScript and Elm take a different approach, abstracting more from plain JavaScript in order to not be bound by its inherent limitations.
 
 \section{Elm}
+Elm is a purely functional programming language that transpiles to JavaScript. It aims to eliminate all possible runtime errors and let developers write declarative code within a model-view-update framework, known as The Elm Architecture.
 
 \subsection{Stated design goals}
 % No runtime errors, even at the cost of limited interoperability
+
+\subsubsection{No runtime errors}
+If some Elm code compiles and has been type checked, it must be guaranteed to not crash. This is achieved through its strong static type system and limited interoperability: unlike in similar languages, it's been restricted to message passing only, since calling foreign functions could allow malformed data to sneak into the Elm runtime.
+
+\subsubsection{Predictability}
+Side effects are a significant source of impredictability. Being a purely functional language, the developer knows when they call a function in Elm it's always a pure function, which means that no side effects can happen. Data can only be transformed and, if needed, returned to the caller.
+
+\subsubsection{Simplicity}
+Elm is meant to be easy to learn and use. This is the reason the language itself is not as comprehensive as some of its purely functional competitors, not providing advanced features like higher-kinded types and type classes.
+
 \subsection{Language features}
 % ADTs, pattern matching, strong inference
 \subsection{The Elm Architecture (TEA)}
