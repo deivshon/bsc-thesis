@@ -1,9 +1,18 @@
 \chapter{Introduction}
 \setcounter{page}{1}
 
-\section{State of the art}
+\section{The frontend landscape}
 % Functional languages for frontend, mention purescript/rescript
+JavaScript is the web's scripting language, and while some forms of interactivity such as form submissions are possible without it, less than 2\% of websistes doesn't include any \cite{noauthor_usage_nodate}. JavaScript is an imperative, weakly and dynamically typed programming language. While it can be used directly, today it is also a transpilation target of a plethora of programming languages \cite{noauthor_list_nodate}.\\
+
+Most modern websites are created with frameworks that facilitate the creation of dynamic UIs by letting the developer write declarative code and handling reconciliation between state and the DOM internally. While frameworks solve a class of problems, they can't solve JavaScript's: not having a static type system makes it easy for subtle bugs to go undetected, and makes refactoring existing code hard to complete without introducing regressions.\\
+
+For this reason, many of the languages that transpile to JavaScript include static type systems. TypeScript is the most successful one \cite{noauthor_most_nodate}, it seeks to add only a thin layer on top of plain JavaScript that allows for a structural type system to be used, and provides seamless interoperation. Said type system is not sound, and making it sound is not a goal of the language \cite{noauthor_typescript_nodate}, which also includes escape hatches such as type assertions that when abused have the potential to cause runtime errors.
+
+Other languages such as PureScript, ReScript and Elm take a different approach, abstracting more from plain JavaScript in order to not be bound by its inherent limitations.
+
 \section{Elm}
+
 \subsection{Stated design goals}
 % No runtime errors, even at the cost of limited interoperability
 \subsection{Language features}
