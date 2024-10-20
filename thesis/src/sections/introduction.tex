@@ -123,10 +123,49 @@ getStatusString status =
             "In progress since epoch " ++ String.fromInt ts
 
         Delivered ts address ->
-            "Delivered to " ++ address ++ " at epoch " ++ String.fromInt ts
+            "Delivered to "
+                ++ address
+                ++ " at epoch "
+                ++ String.fromInt ts
 \end{minted}
 
 \subsubsection{Error handling}
+Elm has opted to represent errors as values. A built-in \texttt{Result} type is present
+\begin{minted}{elm}
+type Result e v
+    = Ok v
+    | Err e
+\end{minted}
+
+Being generic, we can use any type for errors. For instance, we can use another sum type as the \texttt{e} error type, enumerating the possible failure modes. 
+\begin{minted}{elm}
+type DivisionError
+    = DivisionByZero
+
+
+safeDivide : Float -> Float -> Result DivisionError Float
+safeDivide a b =
+    if b == 0 then
+        Err DivisionByZero
+
+    else
+        Ok (a / b)
+\end{minted}
+This powerful pattern allows to make sure any function caller will not be able to use an invalid result: they must first pattern match on it and, in case of an error, they know exactly what went wrong.\\
+
+Similarly, a \texttt{Maybe} type is available to be used wherever a value may or may not be present:
+\begin{minted}{elm}
+type Maybe a
+    = Just a
+    | Nothing
+
+type alias Person =
+    { name : String
+    , age : Int
+    , email : Maybe String
+    }
+\end{minted}
+
 \subsection{The Elm Architecture (TEA)}
 % Mention impossibility of tying messages with a particular state, which often result in boilerplate (e.g. what do you do if you get a message that prompts you to fetch stuff but you don't have a token loaded? You need to handle that case for all messages if you have some token in your state. Solution is to pass the token in the message but this means you have to drill the token down to all components that use it)
 \subsubsection{Structure}
