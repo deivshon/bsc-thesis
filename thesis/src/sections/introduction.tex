@@ -168,5 +168,94 @@ type alias Person =
 
 \subsection{The Elm Architecture (TEA)}
 % Mention impossibility of tying messages with a particular state, which often result in boilerplate (e.g. what do you do if you get a message that prompts you to fetch stuff but you don't have a token loaded? You need to handle that case for all messages if you have some token in your state. Solution is to pass the token in the message but this means you have to drill the token down to all components that use it)
-\subsubsection{Structure}
+
+The standard way to build interactive web applications with Elm is to use its built-in declarative model-view-update framework, known as The Elm Architecture.
+
+\subsubsection{Model}
+An Elm application must have a model that will be used in the view/update cycle. Said model contains the state of the application. For instance, a sample application containing a single checkbox would come with a single \texttt{Bool} as its state, representing whether the checkbox is checked or unchecked:
+
+\begin{minted}{elm}
+type alias Model = Bool
+\end{minted}
+
+\subsubsection{Update}
+In order to change the state when the user performs an action we need to define a message type. This is conventionally named \texttt{Msg} and is usually a sum type. In our simple checkbox example application, we have a single action to associate to a message: the toggling of the checkbox.
+\begin{minted}{elm}
+type Msg
+    = CheckboxClicked
+\end{minted}
+
+We should then define a function that takes a message and the current state as parameters and returns the new state. This function is conventionally named \texttt{update}:
+\begin{minted}{elm}
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+        CheckboxClicked ->
+            not model
+\end{minted}
+
+In more complex applications, the update function may not only return the state, but a tuple containing the state and a command to exectue, in turn associated with a message to be handled once it completes:
+\begin{minted}{elm}
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    [...]
+\end{minted}
+
+\subsubsection{View}
+The view function uses the current state to render HTML based on it. Elm comes with a \texttt{Html} package exposing what's necessary to work with all tags, attributes and events.\\
+This is a possible view function for the simple checkbox app:
+\begin{minted}{elm}
+import Html as H
+import Html.Attributes exposing (checked, type_)
+import Html.Events exposing (onClick)
+
+[...]
+
+view : Model -> H.Html Msg
+view model =
+    H.div []
+        [ H.input
+            [ type_ "checkbox"
+            , checked model
+            , onClick CheckboxClicked
+            ]
+            []
+        , H.span []
+            [ H.text
+                (if model then
+                    "Checked"
+
+                 else
+                    "Unchecked"
+                )
+            ]
+        ]
+\end{minted}
+In the first parameter of a HTML tag all attributes and events related to the node are passed in a list, the second is the list containing its children nodes.\\
+
+A careful look at the \texttt{view} function signature shows the \texttt{H.Html} type is generic and associated to the \texttt{Msg} type. This is because the returned HTML will only cause updates of the \texttt{Msg} type, ensuring the \texttt{update} function can handle them properly.
+
+\subsubsection{Initialization}
+An initial state must also be provided, conventionally named \texttt{init}.\\
+To bring it all together, update, view and initialization can then be passed to the \texttt{Browser.sandbox} function, which takes care of starting and running the Elm runtime:
+\begin{minted}{elm}
+init : Model
+init =
+    False
+
+[...]
+
+main : Program () Model Msg
+main =
+    Browser.sandbox
+        { init = init
+        , update = update
+        , view = view
+        }
+\end{minted}
+
+The update function runs every time a message is sent, and the state it returns replaces the current one, at which point the DOM is updated according the what the view function called with this new state returns.
+
+It should be noted that using \texttt{Browser.sandbox} is not the only way to initialize the Elm runtime. In more complex applications \texttt{Browser.application} can be used, which allows for control over URL changes, using a function as the \texttt{init} parameter which can perform computations to decide the initial state, and more.
+
 \subsubsection{Internals and performance}
