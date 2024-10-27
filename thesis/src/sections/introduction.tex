@@ -48,7 +48,7 @@ addToListItems n ls =
     List.map (\x -> x + n) ls
 \end{minted}
 
-Elm's LSP supports a "add type annotation" action. Using it on the unannotated version of the function yields a slightly different result:
+Elm's (unofficial) LSP supports a "add type annotation" action. Using it on the unannotated version of the function yields a slightly different result:
 \begin{minted}{elm}
 addToListItems : number -> List number -> List number
 addToListItems n ls =
@@ -261,7 +261,7 @@ It should be noted that using \texttt{Browser.sandbox} is not the only way to in
 \subsection{Internals}
 A fundamental feature of the vast majority of frontend frameworks today, Elm included, is the automatic synchronization between internal state and the DOM.\\
 
-During runtime, Elm uses a Virtual DOM (often abbreviated to VDOM) to keep track of the current state in respect to the DOM. The Elm VDOM is a lightweight representation of the DOM in JavaScript, allowing to operate on it much faster than would be possible using the real one.\cite{noauthor_htmllazy_nodate}\\
+During runtime, Elm uses a Virtual DOM (often abbreviated to VDOM) to keep track of the current state in respect to the DOM. The Elm VDOM is a lightweight representation of the DOM in JavaScript, which allows fast operations compared to those that would be possible using the real one. \cite{noauthor_htmllazy_nodate}\\
 
 Whenever a new model is returned from them main \texttt{update} function, Elm compares the current VDOM with the next one computed using the new state, so that it can apply the costly real DOM operations only on the elements that actually need it.\\
 
