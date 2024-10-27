@@ -258,4 +258,10 @@ The update function runs every time a message is sent, and the state it returns 
 
 It should be noted that using \texttt{Browser.sandbox} is not the only way to initialize the Elm runtime. In more complex applications \texttt{Browser.application} can be used, which allows for control over URL changes, using a function as the \texttt{init} parameter which can perform computations to decide the initial state, and more.
 
-\subsubsection{Internals and performance}
+\subsection{Internals}
+A fundamental feature of the vast majority of frontend frameworks today, Elm included, is the automatic synchronization between internal state and the DOM.\\
+
+During runtime, Elm uses a Virtual DOM (often abbreviated to VDOM) to keep track of the current state in respect to the DOM. The Elm VDOM is a lightweight representation of the DOM in JavaScript, allowing to operate on it much faster than would be possible using the real one.\cite{noauthor_htmllazy_nodate}\\
+
+Whenever a new model is returned from them main \texttt{update} function, Elm compares the current VDOM with the next one computed using the new state, so that it can apply the costly real DOM operations only on the elements that actually need it.\\
+
