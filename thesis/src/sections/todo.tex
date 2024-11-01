@@ -77,7 +77,7 @@ This section's application has a few user initiated operations that need to wait
 \end{itemize}
 These interactions change the state of a single entity in the application, it would therefore make sense to render a UI element representing the loading state that is specific to the operation and, if existing, the entity the interaction concerned.
 
-In Elm the shape of the whole state needs to be specified upfront \footnote{Except when using \texttt{Html.map} and therefore the \textit{Nested TEA} pattern}\cite{noauthor_elm_nodate}, as there is no concept of local state. This makes it convenient to create a global loader, using a simple \texttt{Int} to track how many operations are currently in a loading state and rendering it conditionally. This was what chosen in the end for this section's app, but other possibilities were explored.\\
+In Elm the shape of the whole state needs to be specified upfront \cite{noauthor_elm_nodate}, as there is no concept of local state. This makes it convenient to create a global loader, using a simple \texttt{Int} to track how many operations are currently in a loading state and rendering it conditionally. This was what chosen in the end for this section's app, but other possibilities were explored.\\
 
 If we want to make the loading states granular, we have a few options, each needing some amount of added boilerplate code:
 \begin{enumerate}

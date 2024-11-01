@@ -20,23 +20,38 @@ While said Elm binary works well, other important features are not offered:
 % Mention that there is no obvious way to bundle ports with elm's tooling and the user is left to whatever solution they choose
 A basic Elm program initialized using \texttt{Browser.sandbox} produces a single \texttt{index.html} file when transpiled. This file includes a script tag containing all the necessary code Elm needs to run properly.\\
 
-This works well for extremely simple scenarios, but if you need a port, multiple pages or even just adding different link tags to the resulting HTML, it becomes inadequate. In such common cases the \texttt{output} option in the \texttt{elm} binary is needed: it allows to specify an output file path that will contain only the transpiled JavaScript code, so that it can be independently included in a script tag. This is a good modular approach, but it creates another issue to be solved: something needs to bundle all of the needed assets.\\
+This works well for extremely simple scenarios, but if you need a port, multiple pages or even just adding different link tags to the resulting HTML, it becomes inadequate. In such common cases the \texttt{output} option can be used during compilation: it allows to specify an output file path that will contain only the transpiled JavaScript code, so that it can be independently included in a script tag. This is a good modular approach, but it creates another issue to be solved: something needs to bundle all of the needed assets.\\
 
 This is normally done by a build tool such as Vite. Many frameworks today offer:
 \begin{itemize}
     \item A plugin for their build tool of choice
-    \item Another tool to quickly get started building a production-grade application, which typically includes out of the box support for a development server and production builds using built-in commands instead of custom scripts
+    \item Another tool such as a CLI to quickly get started building a production-grade application, which typically includes out of the box support for a development server and production builds using built-in commands instead of custom scripts
 \end{itemize}
 None of this is currently offered by Elm directly. An unofficial Vite plugin exists \cite{hamasaki_hmskvite-plugin-elm_2024}, but no CLI or similar tool exist for getting started with a working configuration.\\
 
 The most complete Elm development experience is offered by the \texttt{elm-pages} framework, which also allows to create full-stack applications with API routes, server side rendering and hydration. \cite{noauthor_what_nodate}
 
 \section{(Lack of) Components}
-\subsection{Elm's approach}
-% Mention centralized state handling overhead
-% Mention the whole components debate, refer to granular loaders and the login component and state on URLs change, all stuff that emerges naturally in framework-based solutions. Mention the fact that Elm makes you think about all state within your application in your Main.elm vs other frameworks you can have local state. Mention nested TEA as an Elm antipattern
-\subsection{Nested TEA as an anti-pattern}
-% Html.map etc
+What sets Elm apart from the most popular frontend solutions is the fact that it is not component-based. Rather than seeing the UI as many objects interacting with each other, Elm's computed UIs are the output of a pure function that has the current \texttt{Model} instance as its input. Therefore, there is no concept of state that is local to any entity in Elm, all state is centralized, and the only way it can be changed is by returning a different \texttt{Model} instance from the main \texttt{update} function.
+
+This has significant benefits:
+\begin{itemize}
+    \item State changes in a more predictable way, given \texttt{update} is the only function where this happens
+    \item The data flow is predictable: the TEA fully adopts a MVU (Model View Update) model, and the basic cycle is simple to understand and reason about
+\end{itemize}
+
+The most significant downside is scalability. Elm works fairly well for small to medium sized applications, but at a certain size the centralized state approach becomes a significant overhead, the size of the model and the different messages increase significantly. While composition and modularization can help, component-based frameworks usually avoid this problem completely since, unlinke in Elm, local state is allowed.\\
+
+The login and signup from the simple social network application are an interesting example. There is no real reason any entity within the Elm application needs to know about the username and password the user inputs in the respective fields, these just need to be tracked somewhere and communicated at some point so that the related API call can fire.\\
+
+While in the example application adding the login and signup related state in the global model did not cause issues, if the application contains many independent parts each with their own piece of state which could have been local, then the cumulated noise can become significant. This kind of application with strong interactive features is also one where Elm would generally be considered a good choice.
+
 \section{Limits of JavaScript interoperability}
 % No willingness to create tools that even help with interoperability, ports code generation comes to mind for instance, while canonically you have to create the .d.ts file yourself if you want typesafety (which you don't have unless you specify everything as their T | undefined)
+
+As mentioned previously, Elm has opted for a limited interoperability strategy with JavaScript, providing no way of calling JavaScript function directly. This is needed to ensure the stability and robustness of the Elm runtime, since foreign functions can't be trusted to have the same strong guarantee of not crashing that Elm provides internally. Ports are the most popular way to interoperate with JavaScript, although Web Components can also be used.\\
+
+Using ports instead of traditional FFI can add significant overhead in some cases. For instance, if there is existing JavaScript code that performs synchronous operations, with FFI the related function could simply be called and the result would be directly available for use.\\
+With ports, two of them would be needed, one for receiving the input from and the other for sending the output to the Elm runtime. Because of the nature of how ports are handled in Elm the operation is now forced to be handled asynchronously: first a message is sent requesting the operation with some inputs, and then the result is received through a message.
+
 \section{Final thoughts}
