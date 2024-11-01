@@ -258,10 +258,62 @@ The update function runs every time a message is sent, and the state it returns 
 
 It should be noted that using \texttt{Browser.sandbox} is not the only way to initialize the Elm runtime. In more complex applications \texttt{Browser.application} can be used, which allows for control over URL changes, using a function as the \texttt{init} parameter which can perform computations to decide the initial state, and more.
 
-\subsection{Internals}
-A fundamental feature of the vast majority of frontend frameworks today, Elm included, is the automatic synchronization between internal state and the DOM.\\
+\subsection{Internals and performance}
+Two main metrics can be used to evaluate the performance of an SPA frontend solution like Elm:
+\begin{itemize}
+    \item Computational overhead compared to plain JavaScript
+    \item Asset size
+\end{itemize}
 
-During runtime, Elm uses a Virtual DOM (often abbreviated to VDOM) to keep track of the current state in respect to the DOM. The Elm VDOM is a lightweight representation of the DOM in JavaScript, which allows fast operations compared to those that would be possible using the real one. \cite{noauthor_htmllazy_nodate}\\
+\subsubsection{Overhead}
+A fundamental feature of the vast majority of frontend frameworks today, Elm included, is the automatic synchronization between internal state and the DOM. This is the process that creates overhead compared to using manual DOM manipulations with plain JavaScript.\\
 
-Whenever a new model is returned from them main \texttt{update} function, Elm compares the current VDOM with the next one computed using the new state, so that it can apply the costly real DOM operations only on the elements that actually need it.\\
+At runtime, Elm uses a Virtual DOM (often abbreviated to VDOM) to keep track of the current state in respect to the DOM. The Elm VDOM is a lightweight representation of the DOM in JavaScript, which allows fast operations compared to those that would be possible using the real one. \cite{noauthor_htmllazy_nodate}\\
 
+Whenever a new model is returned from them main \texttt{update} function, Elm compares the current VDOM with the next one computed using the new state, so that it can apply the real and costly DOM operations only on the elements that actually need it. This comparison process is what is usually called \textit{diffing}, and it is executed by comparing each node of previous VDOM with its current counterpart.\\
+
+There's also a manual, opt-in way to optimize the diffing process: \texttt{Html.Lazy}. Let's take an example function that produces a big tree of HTML nodes:
+\begin{minted}{elm}
+viewComplexData : String -> Int -> H.Html msg
+viewComplexData content amount =
+    H.div []
+        [ [...] -- Complex rendering logic 
+                -- with many children and subchildren
+        ]
+\end{minted}
+
+Normally, we would use it like this:
+\begin{minted}{elm}
+viewModelComplexData data =
+    H.div []
+        [ [...]
+        , viewComplexData data.content data.amount
+        , [...]
+        ]
+\end{minted}
+
+But we may also wrap the \texttt{viewComplexData} function call with \texttt{lazy2}\footnote[1]{the 2 at the end simply signifies that it is the \texttt{lazy} function whose wrapped view function takes two arguments. This is necessary since Elm does not support variadic functions.}:
+\begin{minted}{elm}
+import Html.Lazy exposing (lazy2)
+[...]
+viewModelComplexData data =
+    H.div []
+        [ [...]
+        , lazy2 viewComplexData data.content data.amount
+        , [...]
+        ]
+\end{minted}
+
+
+Since Elm is a purely functional language, the Elm compiler is guaranteed that all functions in an Elm code are referentially transparent (i.e. given the same input they always produce the same output). During the diffing process, if the Elm runtime encounters a normal node it proceeds to compare its children nodes, but if that node was created using \texttt{lazy} the costly part of the comparison is avoided: Elm can simply check that the function \texttt{lazy} is wrapping and its arguments are the same, with the formal guarantee that if this is true then nothing can have changed in the output nodes.
+
+\subsubsection{Asset size}
+For all frontend solutions asset size is an important metric, especially for those that produce a pure SPA: before the user can see anything on the screen, the JavaScript asset that contains the code to actually render HTML must be fetched, parsed and executed.
+
+The default \texttt{elm make} command without flags produces unoptimized JavaScript code, while the \texttt{--optimize} flag, which is suggested for production builds, tells the Elm compiler to perform various optimizations that also help make the final asset size smaller, such as dead code elimination. The resulting code is not minified, and it is suggested to use any JavaScript minifier. \cite{noauthor_minification_nodate}
+
+Some optimizations can be safely used on the transpiled code that would normally not be applicable at all or without significant risks:
+\begin{itemize}
+    \item \textbf{Record fields shortening}\\In standard JavaScript object fields can be accessed dynamically (i.e. not using the field name explicitly but using some value that contains it), leading to possible runtime crashes if they are changed for optimization purposes. Elm does not support dynamic fields access, making it possible to safely shorten the record fields during build time.
+    \item \textbf{Unused function calls elimination}\\If the result of a function call is not used that call and, if present, assignment can be completely eliminated. This would not be safe if Elm didn't guarantee that functions don't have side effects, since in that case it would be impossible to tell if the function modifies values that are actually used somewhere else.
+\end{itemize}
