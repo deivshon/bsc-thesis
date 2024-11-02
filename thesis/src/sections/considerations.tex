@@ -73,3 +73,10 @@ A possible solution could be to treat all incoming port and flags data as unknow
 That said, Elm still provides a significantly safer alternative to most other solutions, the most popular being JavaScript or TypeScript frameworks. TypeScript can be configured to allow a vast number of escape hatches from its type system, which is not sound by design, and alternative functional languages such as ReScript and PureScript allow easier interoperability and better ergonomics at the cost higher runtime safety risks.
 
 \section{Final thoughts}
+Elm comes with relatively niche trade-offs compared to the most popular solutions: it provides great runtime safety and a simple yet powerful architectural model but poorer ergonomics around Web Platform APIs. Despite this and never having reached widespread usage, it has most definitely left its mark on web development:
+\begin{itemize}
+    \item The Elm Architecture is a clear and simple model that has inspired vastly used projects such as Redux \cite{noauthor_prior_2024}
+    \item Its emphasis on type-safety was relatively new within the frontend landscape at the time of its inception, but is now gaining more and more traction in the industry, with TypeScript usage expanding year by year \cite{staff_octoverse_2024}
+    \item Elm is purely functional, and is one of many actors to have influenced a shift towards a more functional approach both at the language and framework level
+\end{itemize}
+In conclusion, while Elm's features and trade-offs may not be suitable for most of the industry today, it helped the web develop towards a future where reliability is a primary concern, something that had been severely lacking for a long time.
