@@ -16,7 +16,13 @@
 \lstset{framextopmargin=50pt}
 \usepackage[svgnames]{xcolor}
 \usepackage[colorlinks=true, allcolors=Black]{hyperref}
-\usepackage[backend=bibtex,style=numeric]{biblatex}
+\usepackage[
+    backend=bibtex,
+    style=numeric,
+]{biblatex}
+\setcounter{biburlnumpenalty}{100}
+\setcounter{biburlucpenalty}{100}
+\setcounter{biburllcpenalty}{100}
 \addbibresource{bibliography.bib}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta}

@@ -54,4 +54,22 @@ As mentioned previously, Elm has opted for a limited interoperability strategy w
 Using ports instead of traditional FFI can add significant overhead in some cases. For instance, if there is existing JavaScript code that performs synchronous operations, with FFI the related function could simply be called and the result would be directly available for use.\\
 With ports, two of them would be needed, one for receiving the input from and the other for sending the output to the Elm runtime. Because of the nature of how ports are handled in Elm the operation is now forced to be handled asynchronously: first a message is sent requesting the operation with some inputs, and then the result is received through a message.
 
+\section{Runtime safety}
+Elm's main selling point is its runtime safety: if an Elm program compiles, it should not be able to crash. There are a few cases when this, even when building an Elm only web application, does not hold. Most notably, these operations will cause the Elm runtime to crash:
+\begin{itemize}
+    \item Using the \texttt{==} operator on functions \cite{noauthor_corehints5md_nodate}
+    \item Performing a modulo operation with zero as the modulus \cite{noauthor_corehints11md_nodate}
+\end{itemize}
+While these operations are unlikely to be performed, they may still be encountered in some situations.\\
+
+Other operations that may cause runtime crashes in Elm programs that make use of ports or flags include:
+\begin{itemize}
+    \item Initializing the Elm runtime with flags of a wrong type \cite{noauthor_corehints2md_nodate}
+    \item Sending values of a wrong type through a port \cite{noauthor_corehints4md_nodate}
+\end{itemize}
+This is especially critical given that most web applications of decent complexity need to use a number of Web Platform APIs, most of which are not directly wrapped by Elm and necessitate ports in order to be used.\\
+A possible solution could be to treat all incoming port and flags data as unknown and making it mandatory to provide decoders, as is the case with the HTTP library. While this would prevent a number of port-related crashes and force the developers the gracefully handle bad values, it would also add a layer of boilerplate code which might not be judged necessary by most.
+
+That said, Elm still provides a significantly safer alternative to most other solutions, the most popular being JavaScript or TypeScript frameworks. TypeScript can be configured to allow a vast number of escape hatches from its type system, which is not sound by design, and alternative functional languages such as ReScript and PureScript allow easier interoperability and better ergonomics at the cost higher runtime safety risks.
+
 \section{Final thoughts}
