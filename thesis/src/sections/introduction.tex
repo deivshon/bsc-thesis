@@ -3,11 +3,11 @@
 \addcontentsline{toc}{chapter}{Introduction}
 \setcounter{page}{1}
 
-JavaScript is the web's scripting language, and while some forms of interactivity such as form submissions are possible without it, less than 2\% of websistes doesn't include any \cite{noauthor_usage_nodate}. JavaScript is an imperative, weakly and dynamically typed programming language. While it can be used directly, today it is also a transpilation target of a plethora of programming languages \cite{noauthor_list_nodate}.
+JavaScript is the web's scripting language, and while some forms of interactivity such as form submissions are possible without it, less than 2\% of websistes don't include any \cite{noauthor_usage_nodate}. JavaScript is an imperative, weakly and dynamically typed programming language. While it can be used directly, today it is also a transpilation target of a plethora of programming languages \cite{noauthor_list_nodate}.
 
-Most modern websites are created with frameworks that facilitate the creation of dynamic UIs by letting the developer write declarative code and handling reconciliation between state and the DOM internally. While frameworks solve a class of problems, they can't solve JavaScript's: not having a static type system makes it easy for subtle bugs to go undetected, and makes refactoring existing code hard to complete without introducing regressions.
+Most modern websites are created with frameworks that facilitate the creation of dynamic UIs by letting the developer write declarative code and handling reconciliation between state and the DOM internally. While frameworks solve a class of problems, they can't solve JavaScript's: not having a static type system makes it easy for subtle bugs to go undetected, and makes refactoring existing code hard without introducing regressions.
 
-For this reason, many of the languages that transpile to JavaScript include static type systems. TypeScript is the most successful one \cite{noauthor_most_nodate}, it seeks to add only a thin layer on top of plain JavaScript that allows for a structural type system to be used, and provides seamless interoperation. Said type system is not sound, and making it sound is not a goal of the language \cite{noauthor_typescript_nodate}, which also includes escape hatches such as type assertions that when abused have the potential to cause runtime errors.
+For this reason, many of the languages that transpile to JavaScript include static type systems. TypeScript is the most successful one \cite{noauthor_most_nodate}, it seeks to add only a thin layer on top of plain JavaScript that allows for a structural type system to be used, and provides seamless interoperation. TypeScript's type system is not sound, and making it sound is not a goal of the language \cite{noauthor_typescript_nodate}, which also includes escape hatches such as type assertions, that when abused have the potential to cause runtime errors.
 
 Other languages such as PureScript, ReScript and Elm take a different approach, abstracting more from plain JavaScript in order to not be bound by its inherent limitations.
 
@@ -18,13 +18,13 @@ Elm is a purely functional programming language that transpiles to JavaScript. I
 % No runtime errors, even at the cost of limited interoperability
 
 \subsubsection{No runtime errors}
-If some Elm code compiles and has been type checked, it must be guaranteed to not crash. This is achieved through its strong static type system and limited interoperability: unlike in similar languages, it's been restricted to message passing only, since calling foreign functions could allow malformed data to sneak into the Elm runtime.
+If an Elm program compiles and has been type checked, it is almost completely guaranteed to not crash. This is achieved through its strong static type system and limited interoperability: unlike in similar languages, it's been restricted to message passing and Web Components usage only, since calling foreign functions could allow malformed data to sneak into the Elm runtime.
 
 \subsubsection{Predictability}
 Side effects are a significant source of impredictability. Being a purely functional language, the developer knows when they call a function in Elm it's always a pure function, which means that no side effects can happen. Data can only be transformed and, if needed, returned to the caller.
 
 \subsubsection{Simplicity}
-Elm is meant to be easy to learn and use. This is the reason the language itself is not as comprehensive as some of its purely functional competitors, not providing advanced features like higher-kinded types and type classes.
+Elm is meant to be easy to learn and use. This is the reason the language itself is not as comprehensive as some of its purely functional competitors, not providing advanced features such as higher-kinded types and type classes.
 
 \section{Language features}
 % ADTs, pattern matching, strong inference
@@ -38,32 +38,30 @@ Elm provides the following primitive types:
 \end{itemize}
 The generic \texttt{List} type is also available to create lists of a given type.\\
 
-These types can be used in functions, which in Elm are treated like normal values and can be passed and accepted as parameters.
-
 \subsubsection{Type annotations and inference}
-Elm supports type annotations, these help clarify intent and allow readers to understand the function signature by glancing at it instead of relying on IDE tools or needing to go through the implementation:
+Elm supports type annotations, these help clarify intent and allow readers to understand the function signature by just reading the code, instead of relying on IDE tools or needing to go through the implementation:
 \begin{minted}{elm}
 addToListItems : Int -> List Int -> List Int
 addToListItems n ls =
     List.map (\x -> x + n) ls
 \end{minted}
 
-Elm's (unofficial) LSP supports a "add type annotation" action. Using it on the unannotated version of the function yields a slightly different result:
+Elm's (unofficial) LSP supports a ``add type annotation'' action. Using it on the unannotated version of the function yields a slightly different result:
 \begin{minted}{elm}
 addToListItems : number -> List number -> List number
 addToListItems n ls =
     List.map (\x -> x + n) ls
 \end{minted}
-\texttt{number} is neither a \texttt{Float} nor an \texttt{Int} type, instead it's a type that accepts both. When adding a type annotation using the LSP action, Elm adds the same one it computes when performing type inference, which is the widest the implementation can handle.\\
+\texttt{number} is neither a \texttt{Float} nor an \texttt{Int} type, instead, it's a type that accepts both. When adding a type annotation using the LSP's action, the signature added is the same one that is computed when Elm performs type inference, which is the widest the implementation supports.\\
 In fact, both \texttt{Float}s and \texttt{Int}s can be passed as the \texttt{addToListItems} function's first parameter, since the \texttt{+} operator in Elm supports both.
 
 \subsubsection{Records}
-Elm supports records, single types containing multiple named components. For instance, without records, if we needed to write a function that renders a \textit{Todo} item, we would have to write it like this:
+Elm supports records, single types containing multiple named components. Without records, if we needed to write a function that renders a \textit{Todo} item, we would have to write it like this:
 \begin{minted}{elm}
 viewTodo id content createdAt updatedAt done =
     ...
 \end{minted}
-When types in the application domain grow significantly, writing all components separately becomes cumbersome. Instead, we can use a record and accept that, accessing its components with the dot notation:
+When types in the application domain grow significantly, writing all components separately becomes cumbersome. Instead, we can use a record, and access its components with the dot notation:
 \begin{minted}{elm}
 type alias Todo =
     { id : String
@@ -81,7 +79,7 @@ isLongTodo todo =
 \end{minted}
 
 \subsubsection{Sum types}
-Sum types, commonly referred to within the Elm community  as \textit{custom types} \cite{noauthor_custom_nodate}, are also supported, increasing the type system's expressiveness.\\
+Sum types, commonly referred to within the Elm community as \textit{custom types} \cite{noauthor_custom_nodate}, are also supported, increasing the type system's expressiveness.\\
 
 They can be used to create regular enums:
 \begin{minted}{elm}
@@ -110,9 +108,9 @@ isOutOfWarehouse status =
             True
 \end{minted}
 
-The \texttt{\_} character matches all remaining possibilities. Since Elm's pattern matching is required to be exhaustive, leaving any option not covered by a branch results in a compile time error.\\
+The \texttt{\_} character matches all remaining possibilities. Since Elm's pattern matching is required to be exhaustive, leaving any option not covered by a branch results in a compile time error. This ensures the developer doesn't leave any possible value unhandled.\\
 
-Pattern matching also allows to access the values inside the type the sum type instance contains:
+Elm's pattern matching also supports accessing the values associated with the sum type instance:
 \begin{minted}{elm}
 getStatusString status =
     case status of
@@ -137,7 +135,7 @@ type Result e v
     | Err e
 \end{minted}
 
-Being generic, we can use any type for errors. For instance, we can use another sum type as the \texttt{e} error type, enumerating the possible failure modes. 
+Being generic, any type can be used for errors. For instance, another sum type may be used as the \texttt{e} error type, enumerating the possible failure modes:
 \begin{minted}{elm}
 type DivisionError
     = DivisionByZero
@@ -151,9 +149,9 @@ safeDivide a b =
     else
         Ok (a / b)
 \end{minted}
-This powerful pattern allows to make sure any function caller will not be able to use an invalid result: they must first pattern match on it and, in case of an error, they know exactly what went wrong.\\
+This powerful pattern allows us to make sure any function caller will not be able to use an invalid result: they must first pattern match on it, and, in case of an error, they know exactly what went wrong.\\
 
-Similarly, a \texttt{Maybe} type is available to be used wherever a value may or may not be present:
+Similarly, a \texttt{Maybe} type is available, and can be used wherever a value may or may not be present:
 \begin{minted}{elm}
 type Maybe a
     = Just a
@@ -169,7 +167,7 @@ type alias Person =
 \section{The Elm Architecture (TEA)}
 % Mention impossibility of tying messages with a particular state, which often result in boilerplate (e.g. what do you do if you get a message that prompts you to fetch stuff but you don't have a token loaded? You need to handle that case for all messages if you have some token in your state. Solution is to pass the token in the message but this means you have to drill the token down to all components that use it)
 
-The standard way to build interactive web applications with Elm is to use its built-in declarative model-view-update framework, known as The Elm Architecture.
+The standard way to build interactive web applications with Elm is to use its built-in, declarative, model-view-update framework, known as The Elm Architecture.
 
 \subsubsection{Model}
 An Elm application must have a model that will be used in the view/update cycle. Said model contains the state of the application. For instance, a sample application containing a single checkbox would come with a single \texttt{Bool} as its state, representing whether the checkbox is checked or unchecked:
@@ -179,13 +177,13 @@ type alias Model = Bool
 \end{minted}
 
 \subsubsection{Update}
-In order to change the state when the user performs an action we need to define a message type. This is conventionally named \texttt{Msg} and is usually a sum type. In our simple checkbox example application, we have a single action to associate to a message: the toggling of the checkbox.
+In order to change the state when the user performs an action we need to define a message type. This is conventionally named \texttt{Msg} and is usually a sum type. In our simple checkbox example application, the only action to associate to a message is the toggling of the checkbox:
 \begin{minted}{elm}
 type Msg
     = CheckboxClicked
 \end{minted}
 
-We should then define a function that takes a message and the current state as parameters and returns the new state. This function is conventionally named \texttt{update}:
+We should then define a function that takes a message and the current state as parameters, and returns the new state. This function is conventionally named \texttt{update}:
 \begin{minted}{elm}
 update : Msg -> Model -> Model
 update msg model =
@@ -194,7 +192,7 @@ update msg model =
             not model
 \end{minted}
 
-In more complex applications, the update function may not only return the state, but a tuple containing the state and a command to exectue, in turn associated with a message to be handled once it completes:
+In more complex applications, the update function may not only return the state, but a tuple containing the state and a command to execute, in turn associated with a message to be handled once it completes:
 \begin{minted}{elm}
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -231,9 +229,9 @@ view model =
             ]
         ]
 \end{minted}
-In the first parameter of a HTML tag all attributes and events related to the node are passed in a list, the second is the list containing its children nodes.\\
+In the first parameter of a Elm's function for an HTML tag, all attributes and events related to the node are passed as a list, while the second parameter is a list containing its children nodes.\\
 
-A careful look at the \texttt{view} function signature shows the \texttt{H.Html} type is generic and associated to the \texttt{Msg} type. This is because the returned HTML will only cause updates of the \texttt{Msg} type, ensuring the \texttt{update} function can handle them properly.
+A careful look at the \texttt{view} function signature shows the \texttt{H.Html} type is generic and associated to the \texttt{Msg} type. This is because the rendered HTML will only send messages of the \texttt{Msg} type, ensuring the \texttt{update} function can handle them properly.
 
 \subsubsection{Initialization}
 An initial state must also be provided, conventionally named \texttt{init}.\\
@@ -254,9 +252,9 @@ main =
         }
 \end{minted}
 
-The update function runs every time a message is sent, and the state it returns replaces the current one, at which point the DOM is updated according the what the view function called with this new state returns.
+The update function runs every time a message is sent, and the state it returns replaces the current one. At this point, the DOM is updated according to what the view function called with the new state returns.
 
-It should be noted that using \texttt{Browser.sandbox} is not the only way to initialize the Elm runtime. In more complex applications \texttt{Browser.application} can be used, which allows for control over URL changes, using a function as the \texttt{init} parameter which can perform computations to decide the initial state, and more.
+It should be noted that using \texttt{Browser.sandbox} is not the only way to initialize the Elm runtime. In more complex applications \texttt{Browser.application} can be used, which supports control over URL changes, using a function as the \texttt{init} parameter, which can perform computations to decide the initial state, and more.
 
 \section{Internals and performance}
 Two main metrics can be used to evaluate the performance of an SPA frontend solution like Elm:
@@ -268,9 +266,9 @@ Two main metrics can be used to evaluate the performance of an SPA frontend solu
 \subsection{Overhead}
 A fundamental feature of the vast majority of frontend frameworks today, Elm included, is the automatic synchronization between internal state and the DOM. This is the process that creates overhead compared to using manual DOM manipulations with plain JavaScript.\\
 
-At runtime, Elm uses a Virtual DOM (often abbreviated to VDOM) to keep track of the current state in respect to the DOM. The Elm VDOM is a lightweight representation of the DOM in JavaScript, which allows fast operations compared to those that would be possible using the real one. \cite{noauthor_htmllazy_nodate}\\
+At runtime, Elm uses a Virtual DOM (often abbreviated to VDOM) to keep track of the real DOM. The Elm VDOM is a lightweight representation of the DOM in JavaScript, which supports faster operations compared to those that would be possible using the real DOM. \cite{noauthor_htmllazy_nodate}\\
 
-Whenever a new model is returned from them main \texttt{update} function, Elm compares the current VDOM with the next one computed using the new state, so that it can apply the real and costly DOM operations only on the elements that actually need it. This comparison process is what is usually called \textit{diffing}, and it is executed by comparing each node of previous VDOM with its current counterpart.\\
+Whenever a new model is returned from them main \texttt{update} function, Elm compares the current VDOM with the next one computed using the new state, so that it can apply the real and costly DOM operations only on the elements that actually need it. This comparison process is usually called \textit{diffing}, and it is executed by comparing each node of previous VDOM with its current counterpart.\\
 
 There's also a manual, opt-in way to optimize the diffing process: \texttt{Html.Lazy}. Let's take an example function that produces a big tree of HTML nodes:
 \begin{minted}{elm}
@@ -284,7 +282,7 @@ viewComplexData content amount =
 
 Normally, we would use it like this:
 \begin{minted}{elm}
-viewModelComplexData data =
+view data =
     H.div []
         [ [...]
         , viewComplexData data.content data.amount
@@ -292,11 +290,11 @@ viewModelComplexData data =
         ]
 \end{minted}
 
-But we may also wrap the \texttt{viewComplexData} function call with \texttt{lazy2}\footnote[1]{the 2 at the end simply signifies that it is the \texttt{lazy} function whose wrapped view function takes two arguments. This is necessary since Elm does not support variadic functions.}:
+But we may also wrap the \texttt{viewComplexData} function call with \texttt{lazy2}\footnote[1]{the 2 at the end simply signifies that it is the \texttt{lazy} function whose wrapped view function takes two arguments. This is necessary because Elm does not support variadic functions.}:
 \begin{minted}{elm}
 import Html.Lazy exposing (lazy2)
 [...]
-viewModelComplexData data =
+view data =
     H.div []
         [ [...]
         , lazy2 viewComplexData data.content data.amount
@@ -305,15 +303,15 @@ viewModelComplexData data =
 \end{minted}
 
 
-Since Elm is a purely functional language, the Elm compiler is guaranteed that all functions in an Elm code are referentially transparent (i.e. given the same input they always produce the same output). During the diffing process, if the Elm runtime encounters a normal node it proceeds to compare its children nodes, but if that node was created using \texttt{lazy} the costly part of the comparison is avoided: Elm can simply check that the function \texttt{lazy} is wrapping and its arguments are the same, with the formal guarantee that if this is true then nothing can have changed in the output nodes.
+Since Elm is a purely functional language, the Elm compiler is guaranteed that all functions in an Elm program are referentially transparent (i.e. given the same input they always produce the same output). During the diffing process, if the Elm runtime encounters a normal node, it proceeds to compare its children nodes, but if that node was created using \texttt{lazy} the costly part of the comparison is avoided: Elm can simply check that the function \texttt{lazy} is wrapping and its arguments are the same, with the formal guarantee that if this is true then nothing can have changed in the output nodes.
 
 \subsection{Asset size}
-For all frontend solutions asset size is an important metric, especially for those that produce a pure SPA: before the user can see anything on the screen, the JavaScript asset that contains the code to actually render HTML must be fetched, parsed and executed.
+For all frontend solutions asset size is an important metric, especially for those that produce a SPA: before the user can see anything on the screen, the JavaScript asset that contains the code to render the HTML must be fetched, parsed and executed.
 
-The default \texttt{elm make} command without flags produces unoptimized JavaScript code, while the \texttt{--optimize} flag, which is suggested for production builds, tells the Elm compiler to perform various optimizations that also help make the final asset size smaller, such as dead code elimination. The resulting code is not minified, and it is suggested to use any JavaScript minifier. \cite{noauthor_minification_nodate}
+The default \texttt{elm make} command without flags produces unoptimized JavaScript code, while the \texttt{--optimize} flag, which is suggested for production builds, tells the Elm compiler to perform various optimizations that, among other things, help make the final asset size smaller, such as dead code elimination. The resulting code is not minified, but any JavaScript minifier can be used independently. \cite{noauthor_minification_nodate}
 
-Some optimizations can be safely used on the transpiled code that would normally not be applicable at all or without significant risks:
+Some optimizations that would normally not be applicable at all or, at least, not without significant risks, can be safely used on the transpiled code:
 \begin{itemize}
-    \item \textbf{Record fields shortening}\\In standard JavaScript object fields can be accessed dynamically (i.e. not using the field name explicitly but using some value that contains it), leading to possible runtime crashes if they are changed for optimization purposes. Elm does not support dynamic fields access, making it possible to safely shorten the record fields during build time.
-    \item \textbf{Unused function calls elimination}\\If the result of a function call is not used that call and, if present, assignment can be completely eliminated. This would not be safe if Elm didn't guarantee that functions don't have side effects, since in that case it would be impossible to tell if the function modifies values that are actually used somewhere else.
+    \item \textbf{Record fields shortening}\\In JavaScript object fields can be accessed dynamically (i.e. not using the field name explicitly but using a variable that contains it), leading to possible runtime crashes if they are changed for optimization purposes. Elm does not support dynamic fields access, making it possible to safely shorten the record fields at build time.
+    \item \textbf{Unused function calls elimination}\\If the result of a function call is not used, that call and, if present, assignment, can be completely eliminated. This would not be safe if Elm didn't guarantee that functions don't have side effects, since in such a case it would be impossible to tell if the function modifies values that are accessed somewhere else.
 \end{itemize}
