@@ -5,9 +5,9 @@
 
 JavaScript is the web's scripting language, and while some forms of interactivity such as form submissions are possible without it, less than 2\% of websistes don't include any \cite{noauthor_usage_nodate}. JavaScript is an imperative, weakly and dynamically typed programming language. While it can be used directly, today it is also a transpilation target of a plethora of programming languages \cite{noauthor_list_nodate}.
 
-Most modern websites are created with frameworks that facilitate the creation of dynamic UIs by letting the developer write declarative code and handling reconciliation between state and the DOM internally. While frameworks solve a class of problems, they can't solve JavaScript's: not having a static type system makes it easy for subtle bugs to go undetected, and makes refactoring existing code hard without introducing regressions.
+Most modern websites are built with frameworks that facilitate the creation of dynamic UIs. They allow developers to write declarative code and not think about the reconciliation between state and the DOM, which is handled internally. While frameworks solve a class of problems, they can't solve JavaScript's: not having a static type system makes it easy for subtle bugs to go undetected, and refactoring existing code without introducing regressions becomes increasingly hard as the codebase grows larger.
 
-For this reason, many of the languages that transpile to JavaScript include static type systems. TypeScript is the most successful one \cite{noauthor_most_nodate}, it seeks to add only a thin layer on top of plain JavaScript that allows for a structural type system to be used, and provides seamless interoperation. TypeScript's type system is not sound, and making it sound is not a goal of the language \cite{noauthor_typescript_nodate}, which also includes escape hatches such as type assertions, that when abused have the potential to cause runtime errors.
+For this reason, many of the languages that transpile to JavaScript include static type systems. TypeScript is the most successful one \cite{noauthor_most_nodate}, it seeks to add only a thin layer on top of plain JavaScript that allows for a structural type system to be used, and provides seamless interoperation. TypeScript's type system is not (and is not meant to be) sound \cite{noauthor_typescript_nodate}. It also includes escape hatches such as type assertions, that when abused have the potential to cause runtime errors.
 
 Other languages such as PureScript, ReScript and Elm take a different approach, abstracting more from plain JavaScript in order to not be bound by its inherent limitations.
 
@@ -46,14 +46,13 @@ addToListItems n ls =
     List.map (\x -> x + n) ls
 \end{minted}
 
-Elm's (unofficial) LSP supports a ``add type annotation'' action. Using it on the unannotated version of the function yields a slightly different result:
+Elm's (unofficial) LSP supports a ``add type annotation'' action. Using it on the unannotated version of the function above yields a slightly different result:
 \begin{minted}{elm}
 addToListItems : number -> List number -> List number
 addToListItems n ls =
     List.map (\x -> x + n) ls
 \end{minted}
-\texttt{number} is neither a \texttt{Float} nor an \texttt{Int} type, instead, it's a type that accepts both. When adding a type annotation using the LSP's action, the signature added is the same one that is computed when Elm performs type inference, which is the widest the implementation supports.\\
-In fact, both \texttt{Float}s and \texttt{Int}s can be passed as the \texttt{addToListItems} function's first parameter, since the \texttt{+} operator in Elm supports both.
+\texttt{number} is neither a \texttt{Float} nor an \texttt{Int} type, instead, it's a type that accepts both. When adding a type annotation using the LSP's action, the signature added is the same one that is computed when Elm performs type inference, which is the widest the implementation supports. In fact, both \texttt{Float}s and \texttt{Int}s can be passed as the \texttt{addToListItems} function's first parameter, since the \texttt{+} operator in Elm supports both.
 
 \subsubsection{Records}
 Elm supports records, single types containing multiple named components. Without records, if we needed to write a function that renders a \textit{Todo} item, we would have to write it like this:
@@ -261,7 +260,7 @@ The update function runs every time a message is sent, and the state it returns 
 Elm subscriptions allow the Elm runtime to listen to events. For instance, subscriptions can be used to listen to periodic ticks using the built-in \texttt{Time} library, or, more commonly, to listen to inbound messages from JavaScript when interoperating with message passing. In this context, each type of message that can be received from JavaScript is associated with an internal message that can be matched in the \texttt{update} function.
 
 \section{Internals}
-When an Elm program is transpiled it produces a single-page web application (SPA). This kind of application avoids fully loading a new page when clicking on internal links. Instead, it directly modifies the DOM to display the page clicked, performing only the necessary API calls, if any.\\
+When an Elm program is transpiled it produces a single-page web application (SPA). This kind of application avoids fully loading a new page when clicking on internal links. Instead, it directly modifies the DOM to display the page clicked, performing only the necessary network transfers, if any.\\
 
 To improve user-perceived performance in a SPA, two critical factors are:
 \begin{itemize}
@@ -274,7 +273,7 @@ A fundamental feature of the vast majority of frontend frameworks today, Elm inc
 
 At runtime, Elm uses a Virtual DOM (often abbreviated to VDOM) to keep track of the real DOM. The Elm VDOM is a lightweight representation of the DOM in JavaScript, which supports faster operations compared to those that would be possible using the real DOM. \cite{noauthor_htmllazy_nodate}\\
 
-Whenever a new model is returned from them main \texttt{update} function, Elm compares the current VDOM with the next one computed using the new state, so that it can apply the real and costly DOM operations only on the elements that actually need it. This comparison process is usually called \textit{diffing}, and it is executed by comparing each node of previous VDOM with its current counterpart.\\
+Whenever a new model is returned from them main \texttt{update} function, Elm compares the current VDOM with the next one, computed using the new state, so that it can apply the real and costly DOM operations only on the elements that actually need it. This comparison process, commonly referred to as \textit{diffing}, is executed by comparing each node of previous VDOM with its current counterpart.\\
 
 There's also a manual, opt-in way to optimize the diffing process: \texttt{Html.Lazy}. Let's take an example function that produces a big tree of HTML nodes:
 \begin{minted}{elm}
@@ -318,6 +317,6 @@ The default \texttt{elm make} command without flags produces unoptimized JavaScr
 
 Some optimizations that would normally not be applicable at all or, at least, not without significant risks, can be safely used on the transpiled code:
 \begin{itemize}
-    \item \textbf{Record fields shortening}\\In JavaScript object fields can be accessed dynamically (i.e. not using the field name explicitly but using a variable that contains it), leading to possible runtime crashes if they are changed for optimization purposes. Elm does not support dynamic fields access, making it possible to safely shorten the record fields at build time.
+    \item \textbf{Record fields shortening}\\In JavaScript, object fields can be accessed dynamically (i.e. not using the field name explicitly but using a variable that contains it), leading to possible runtime crashes if they are changed for optimization purposes. Elm does not support dynamic fields access, making it possible to safely shorten the record fields at build time.
     \item \textbf{Unused function calls elimination}\\If the result of a function call is not used, that call and, if present, assignment, can be completely eliminated. This would not be safe if Elm didn't guarantee that functions don't have side effects, since in such a case it would be impossible to tell if the function modifies values that are accessed somewhere else.
 \end{itemize}

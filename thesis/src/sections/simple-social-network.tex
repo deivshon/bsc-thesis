@@ -42,7 +42,7 @@ main =
 \texttt{onUrlRequest} gets triggered when a link is clicked, made possible by Elm's internals which intercept navigations, and \texttt{onUrlChange} is instead triggered when a new internal URL is pushed from the Elm runtime through \texttt{Nav.pushUrl}.\\
 Like all other messages, we can handle both within the \texttt{update} function.\\
 
-While a link click can be handled any way that is needed, there's a typical way to do so in standard SPAs if one does not need to prevent navigation to certain URLs before doing some action first\cite{noauthor_navigation_nodate}:
+While a link click can be handled any way that is needed, there's a typical way to do so in standard SPAs if one does not need to prevent navigation to certain URLs before doing some action first \cite{noauthor_navigation_nodate}:
 \begin{minted}{elm}
 case msg of
     LinkClicked urlRequest ->
@@ -102,7 +102,7 @@ Three ports exist, all concerning events related to the authentication token:
     \item \texttt{removeToken} is used after a logout;
     \item \texttt{noInteractionTokenChange} is used when the token changes but the change was not triggered by any action in the current tab (this can happen if the user is using the application in multiple tabs).
 \end{itemize}
-Ports allows message passing from JavaScript to Elm and viceversa, while flags allow proper initialization of state that is controlled outside of the Elm runtime, such as the authorization token of this case.\\
+Ports allow message passing from JavaScript to Elm and viceversa, while flags allow proper initialization of state that is controlled outside of the Elm runtime, such as the authorization token of this case.\\
 
 The \texttt{init} function's signature of the ``social network'' includes a \texttt{Flags} type, containing the current authorization token at the start of the Elm runtime. 
 \begin{minted}{elm}
