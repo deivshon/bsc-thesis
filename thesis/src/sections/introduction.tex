@@ -260,10 +260,12 @@ The update function runs every time a message is sent, and the state it returns 
 
 Elm subscriptions allow the Elm runtime to listen to events. For instance, subscriptions can be used to listen to periodic ticks using the built-in \texttt{Time} library, or, more commonly, to listen to inbound messages from JavaScript when interoperating with message passing. In this context, each type of message that can be received from JavaScript is associated with an internal message that can be matched in the \texttt{update} function.
 
-\section{Internals and performance}
-Two main metrics can be used to evaluate the performance of an SPA frontend solution like Elm:
+\section{Internals}
+When an Elm program is transpiled it produces a single-page web application (SPA). This kind of application avoids fully loading a new page when clicking on internal links. Instead, it directly modifies the DOM to display the page clicked, performing only the necessary API calls, if any.\\
+
+To improve user-perceived performance in a SPA, two critical factors are:
 \begin{itemize}
-    \item Computational overhead compared to plain JavaScript
+    \item Computational overhead (compared to plain JavaScript)
     \item Asset size
 \end{itemize}
 
@@ -307,7 +309,7 @@ view data =
 \end{minted}
 
 
-Since Elm is a purely functional language, the Elm compiler is guaranteed that all functions in an Elm program are referentially transparent (i.e. given the same input they always produce the same output). During the diffing process, if the Elm runtime encounters a normal node, it proceeds to compare its children nodes, but if that node was created using \texttt{lazy} the costly part of the comparison is avoided: Elm can simply check that the function \texttt{lazy} is wrapping and its arguments are the same, with the formal guarantee that if this is true then nothing can have changed in the output nodes.
+Since Elm is a purely functional language, the compiler is guaranteed that all functions in a program are referentially transparent (i.e. given the same input they always produce the same output). During the diffing process, if the Elm runtime encounters a normal node, it proceeds to compare its children nodes, but if the node was created using \texttt{lazy}, the costly part of the comparison is avoided: Elm can simply check that the function \texttt{lazy} is wrapping and its arguments are the same, with the formal guarantee that, if this is true, then nothing can have changed in the output nodes.
 
 \subsection{Asset size}
 For all frontend solutions asset size is an important metric, especially for those that produce a SPA: before the user can see anything on the screen, the JavaScript asset that contains the code to render the HTML must be fetched, parsed and executed.
