@@ -254,7 +254,11 @@ main =
 
 The update function runs every time a message is sent, and the state it returns replaces the current one. At this point, the DOM is updated according to what the view function called with the new state returns.
 
-It should be noted that using \texttt{Browser.sandbox} is not the only way to initialize the Elm runtime. In more complex applications \texttt{Browser.application} can be used, which supports control over URL changes, using a function as the \texttt{init} parameter, which can perform computations to decide the initial state, and more.
+\subsubsection{Subscriptions}
+
+\texttt{Browser.sandbox} is not the only way to initialize an Elm application, other functions such as \texttt{Browser.element} and \texttt{Browser.application} can be used, both of which support the \texttt{subscriptions} field.\\
+
+Elm subscriptions allow the Elm runtime to listen to events. For instance, subscriptions can be used to listen to periodic ticks using the built-in \texttt{Time} library, or, more commonly, to listen to inbound messages from JavaScript when interoperating with message passing. In this context, each type of message that can be received from JavaScript is associated with an internal message that can be matched in the \texttt{update} function.
 
 \section{Internals and performance}
 Two main metrics can be used to evaluate the performance of an SPA frontend solution like Elm:
