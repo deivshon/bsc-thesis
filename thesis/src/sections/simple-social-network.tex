@@ -10,7 +10,7 @@ The ``Simple Social Network'' app is a small web application that allows users t
 This allows us to explore what Elm patterns can be used to handle different routes within the same SPA and interoperate with JavaScript.
 
 \subsection{URLs handling}
-Contrary the the previous section's ``To do'' app, within this application we need to handle different routes. While some frontend frameworks leave routing to third party libraries, Elm has a standardized way to deal with this ubiquitous problem.\\
+Contrary to the previous section's ``To do'' app, within this application we need to handle different routes. While some frontend frameworks leave routing to third party libraries, Elm has a standardized way to deal with this ubiquitous problem.\\
 
 Typically, within the \texttt{Model} of a routed Elm SPA a \texttt{page} field contains the current page type and the related state needed. For this application, we only have four pages:
 \begin{minted}{elm}
@@ -154,7 +154,7 @@ Using only a few lines of code, we were easily able to use a web API not availab
 \subsection{Login/Signup}
 % mention the fact that login could have easily been a component in some other framework
 
-The \texttt{Login} page that was shown before contains the login form, which means it must handle updates to the input data and trigger the proper API call once the user submits said data. The \texttt{Main.elm} file coordinates all state updates and commands, and the only action that we need to handle explicitly there is the submit action, the rest (updates to the current username/password input data) would only be overhead.\\
+The \texttt{Login} page that was shown before, contains the login form, which means it must handle updates to the input data and trigger the proper API call once the user submits said data. The \texttt{Main.elm} file coordinates all state updates and commands, and the only action that we need to handle explicitly there is the submit action, the rest (updates to the current username/password input data) would only be overhead.\\
 Therefore, it makes sense to create a new module that contains the types, updates, messages, and logic strictly related to the login data. We start by defining \texttt{UserAuthData} and \texttt{UserAuthMsg}:
 \begin{minted}{elm}
 type alias UserAuthData =

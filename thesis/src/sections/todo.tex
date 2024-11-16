@@ -14,7 +14,7 @@ This ``To do'' application allows the user to:
 % Mention the idea of dividing the project into type-based files and not components
 In more traditional frontend frameworks, the code is typically split up into many self-contained parts called components. This division creates a natural structure to be followed: each component is placed in a separate file. In some frameworks, such as Svelte, this property is enforced, as no more than one component can exist per file \cite{noauthor_svelte_nodate}. Since, in Elm, components do not exist, this project structure can't be adopted. Instead, the official Elm guide suggests to divide the code into modules that contain the helper functions and values related to a central type. \cite{noauthor_structure_nodate}\\
 
-In the ``To do'' application we're going to have only one page and, therefore, there's going to be a single \texttt{Model}, so the code will be divided into a \texttt{Main.elm} file, which will handle the TEA initialization and update, an \texttt{Api.elm} file, which will contain all of the functions that fetch or send data to the server, and a \texttt{Todo.elm} file, containing all of the helper functions needed to handle the \texttt{Todo} data type in the application
+In the ``To do'' application, we're going to have only one page and, therefore, there's going to be a single \texttt{Model}, so the code will be divided into a \texttt{Main.elm} file, which will handle the TEA initialization and update, an \texttt{Api.elm} file, which will contain all of the functions that fetch or send data to the server, and a \texttt{Todo.elm} file, containing all of the helper functions needed to handle the \texttt{Todo} data type in the application
 
 % //TODO present the decoding/encoding function too
 \subsection{API Layer}
@@ -69,7 +69,7 @@ This time, since a body is being passed to the function, we need to make sure th
 
 \subsection{Granular state handling}
 % Mention granular loaders, two strategies creating map and creating a type that has DTO data and UI stuff like loaders
-The ``To do'' application has a few user initiated operations that need to wait for the server to send a response:
+The ``To do'' application has a few user-initiated operations that need to wait for the server to send a response:
 \begin{itemize}
     \item Creation of a \textit{To do} entity
     \item Deletion of \textit{To do} entity
@@ -96,4 +96,4 @@ type alias LoadingStates =
     and storing it in the \texttt{Model}.
 \end{enumerate} 
 In terms of type safety, the first option is better as the loading state is tied to the \texttt{Todo} itself, thereby eliminating one indirection layer that has the potential to not be handled correctly (by, for instance, inserting a wrong \texttt{id} as a key in the \texttt{Dict}).\\
-Starting from a version of the app with no loading state indicators, it is also the one that takes more refactoring, since in both the \texttt{LoadingStates} and global loader cases there is no need to modify how the \texttt{Todo} entities are passed to the various helper functions.\\
+Starting from a version of the app with no loading state indicators, it is also the one that takes more refactoring, since in both the \texttt{LoadingStates} and global loader cases, there is no need to modify how the \texttt{Todo} entities are passed to the various helper functions.\\

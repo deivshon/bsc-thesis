@@ -3,13 +3,13 @@
 \addcontentsline{toc}{chapter}{Introduction}
 \setcounter{page}{1}
 
-JavaScript is the web's scripting language, and while some forms of interactivity such as form submissions are possible without it, less than 2\% of websistes don't include any \cite{noauthor_usage_nodate}. JavaScript is an imperative, weakly and dynamically typed programming language. While it can be used directly, today it is also a transpilation target of a plethora of programming languages \cite{noauthor_list_nodate}.
+JavaScript is the web's scripting language, and while some forms of interactivity such as form submissions are possible without it, less than 2\% of websistes include none \cite{noauthor_usage_nodate}. JavaScript is an imperative, dynamically typed programming language. While it can be used directly, today it is also a transpilation target of a plethora of programming languages \cite{noauthor_list_nodate}.
 
-Most modern websites are built with frameworks that facilitate the creation of dynamic UIs. They allow developers to write declarative code and not think about the reconciliation between state and the DOM, which is handled internally. While frameworks solve a class of problems, they can't solve JavaScript's: not having a static type system makes it easy for subtle bugs to go undetected, and refactoring existing code without introducing regressions becomes increasingly hard as the codebase grows larger.
+A ubiquitous problem in web applications is the synchronization between the internal state of the application and the Document Object Model (DOM) - the interface that represents what the user actually sees on the page. Therefore, most modern websites are built with frameworks that facilitate the creation of dynamic user interfaces (UIs). They allow developers to write declarative code and not think about the reconciliation between state and the DOM, which is handled internally. While frameworks solve a class of problems, they can't solve JavaScript's: not having a static type system makes it easy for subtle bugs to go undetected, and refactoring existing code without introducing regressions becomes increasingly hard as the codebase grows larger.
 
-For this reason, many of the languages that transpile to JavaScript include static type systems. TypeScript is the most successful one \cite{noauthor_most_nodate}, it seeks to add only a thin layer on top of plain JavaScript that allows for a structural type system to be used, and provides seamless interoperation. TypeScript's type system is not (and is not meant to be) sound \cite{noauthor_typescript_nodate}. It also includes escape hatches such as type assertions, that when abused have the potential to cause runtime errors.
+For this reason, many of the languages that transpile to JavaScript include static type systems. TypeScript is the most successful one \cite{noauthor_most_nodate}, it seeks to add only a thin layer on top of plain JavaScript that allows for a structural type system to be used, and provides seamless interoperation. TypeScript's type system is not (and is not meant to be) sound \cite{noauthor_typescript_nodate}. It also includes escape hatches such as type assertions, that, when abused, have the potential to cause runtime errors.
 
-Other languages such as PureScript, ReScript and Elm take a different approach, abstracting more from plain JavaScript in order to not be bound by its inherent limitations.
+Other languages such as PureScript, ReScript, and Elm take a different approach, abstracting more from plain JavaScript in order to not be bound by its inherent limitations.
 
 \chapter{Elm}
 Elm is a purely functional programming language that transpiles to JavaScript. It aims to eliminate all possible runtime errors and let developers write declarative code within a model-view-update framework, known as The Elm Architecture.
@@ -18,7 +18,7 @@ Elm is a purely functional programming language that transpiles to JavaScript. I
 % No runtime errors, even at the cost of limited interoperability
 
 \subsubsection{No runtime errors}
-If an Elm program compiles and has been type checked, it is almost completely guaranteed to not crash. This is achieved through its strong static type system and limited interoperability: unlike in similar languages, it's been restricted to message passing and Web Components usage only, since calling foreign functions could allow malformed data to sneak into the Elm runtime.
+If an Elm program compiles and has been type checked, it is almost completely guaranteed to not crash. This is achieved through its strong static type system and limited interoperability: unlike similar languages, it's been restricted to message passing and Web Components usage only, since calling foreign functions could allow malformed data to sneak into the Elm runtime.
 
 \subsubsection{Predictability}
 Side effects are a significant source of impredictability. Being a purely functional language, the developer knows when they call a function in Elm it's always a pure function, which means that no side effects can happen. Data can only be transformed and, if needed, returned to the caller.
@@ -46,7 +46,7 @@ addToListItems n ls =
     List.map (\x -> x + n) ls
 \end{minted}
 
-Elm's (unofficial) LSP supports a ``add type annotation'' action. Using it on the unannotated version of the function above yields a slightly different result:
+Elm's (unofficial) Language Server Protocol (LSP) implementation - a program that communicates with IDEs to integrate, among other things, language-specific code actions - supports a ``add type annotation'' action. Using it on the unannotated version of the function above yields a slightly different result:
 \begin{minted}{elm}
 addToListItems : number -> List number -> List number
 addToListItems n ls =
@@ -308,15 +308,15 @@ view data =
 \end{minted}
 
 
-Since Elm is a purely functional language, the compiler is guaranteed that all functions in a program are referentially transparent (i.e. given the same input they always produce the same output). During the diffing process, if the Elm runtime encounters a normal node, it proceeds to compare its children nodes, but if the node was created using \texttt{lazy}, the costly part of the comparison is avoided: Elm can simply check that the function \texttt{lazy} is wrapping and its arguments are the same, with the formal guarantee that, if this is true, then nothing can have changed in the output nodes.
+Since Elm is a purely functional language, the compiler is guaranteed that all functions in a program are referentially transparent (i.e., given the same input they always produce the same output). During the diffing process, if the Elm runtime encounters a normal node, it proceeds to compare its children nodes, but if the node was created using \texttt{lazy}, the costly part of the comparison is avoided: Elm can simply check that the function \texttt{lazy} is wrapping and its arguments are the same, with the formal guarantee that, if this is true, then nothing can have changed in the output nodes.
 
 \subsection{Asset size}
-For all frontend solutions asset size is an important metric, especially for those that produce a SPA: before the user can see anything on the screen, the JavaScript asset that contains the code to render the HTML must be fetched, parsed and executed.
+For all frontend solutions, asset size is an important metric, especially for those that produce a SPA: before the user can see anything on the screen, the JavaScript asset that contains the code to render the HTML must be fetched, parsed, and executed.
 
-The default \texttt{elm make} command without flags produces unoptimized JavaScript code, while the \texttt{--optimize} flag, which is suggested for production builds, tells the Elm compiler to perform various optimizations that, among other things, help make the final asset size smaller, such as dead code elimination. The resulting code is not minified, but any JavaScript minifier can be used independently. \cite{noauthor_minification_nodate}
+The default \texttt{elm make} command, without flags, produces unoptimized JavaScript code, while the \texttt{--optimize} flag, which is suggested for production builds, tells the Elm compiler to perform various optimizations that, among other things, help make the final asset size smaller, such as dead code elimination. The resulting code is not minified, but any JavaScript minifier can be used independently. \cite{noauthor_minification_nodate}
 
 Some optimizations that would normally not be applicable at all or, at least, not without significant risks, can be safely used on the transpiled code:
 \begin{itemize}
-    \item \textbf{Record fields shortening}\\In JavaScript, object fields can be accessed dynamically (i.e. not using the field name explicitly but using a variable that contains it), leading to possible runtime crashes if they are changed for optimization purposes. Elm does not support dynamic fields access, making it possible to safely shorten the record fields at build time.
+    \item \textbf{Record fields shortening}\\In JavaScript, object fields can be accessed dynamically (i.e., not using the field name explicitly but using a variable that contains it), leading to possible runtime crashes if they are changed for optimization purposes. Elm does not support dynamic fields access, making it possible to safely shorten the record fields at build time.
     \item \textbf{Unused function calls elimination}\\If the result of a function call is not used, that call and, if present, assignment, can be completely eliminated. This would not be safe if Elm didn't guarantee that functions don't have side effects, since in such a case it would be impossible to tell if the function modifies values that are accessed somewhere else.
 \end{itemize}
