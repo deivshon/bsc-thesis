@@ -3,6 +3,8 @@
 \addcontentsline{toc}{chapter}{Introduction}
 \setcounter{page}{1}
 
+Web applications, from personal tools to enterprise platforms, serve billions of users daily. In this context, JavaScript plays a fundamental role as the language for client-side interactivity, enabling a great part of the features users expect.
+
 JavaScript is the web's scripting language, and while some forms of interactivity such as form submissions are possible without it, less than 2\% of websistes include none \cite{noauthor_usage_nodate}. JavaScript is an imperative, dynamically typed programming language. While it can be used directly, today it is also a transpilation target of a plethora of programming languages \cite{noauthor_list_nodate}.
 
 A ubiquitous problem in web applications is the synchronization between the internal state of the application and the Document Object Model (DOM) - the interface that represents what the user actually sees on the page. Therefore, most modern websites are built with frameworks that facilitate the creation of dynamic user interfaces (UIs). They allow developers to write declarative code and not think about the reconciliation between state and the DOM, which is handled internally. While frameworks solve a class of problems, they can't solve JavaScript's: not having a static type system makes it easy for subtle bugs to go undetected, and refactoring existing code without introducing regressions becomes increasingly hard as the codebase grows larger.
