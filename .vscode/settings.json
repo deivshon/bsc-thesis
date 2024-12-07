@@ -8,5 +8,8 @@
     "[elm]": {
         "editor.defaultFormatter": "elmTooling.elm-ls-vscode"
     },
-    "latex-workshop.latex.autoBuild.run": "never"
+    "latex-workshop.latex.autoBuild.run": "never",
+    "files.associations": {
+        "*.excalidraw": "json"
+    }
 }
