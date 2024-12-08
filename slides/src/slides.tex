@@ -71,7 +71,7 @@
   \begin{itemize}
       \item Linguaggio staticamente tipato
       \item Puramente funzionale
-      \item Interoperabilità limitata con JS
+      \item Interoperabilità limitata con JavaScript
   \end{itemize}
 \end{frame}
 
@@ -113,7 +113,7 @@ update : Msg -> Model -> Model
   \frametitle{Architettura senza componenti}
   La Elm Architecture non supporta componenti dotato di stato locale.\\
 
-  Questo implica la necessita' di centralizzare lo stato dell'applicazione:
+  Questo implica la necessità di centralizzare lo stato dell'applicazione:
   \vspace{3pt}
   \begin{itemize}
     \item Il \texttt{Model} deve avere accesso a ogni parte dello stato, indipendentemente dalla posizione nel tree in cui questo viene effettivamente usato.
@@ -157,14 +157,40 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 port storeId : String -> Cmd msg
 port removeId : () -> Cmd msg
 port listenId : (Maybe String -> msg) -> Sub msg
-\end{minted}
+  \end{minted}
   \vspace{10pt}
   \textbf{JavaScript}
   \begin{minted}{js}
 app.ports.storeId.subscribe((id) => {...});
 app.ports.removeId.subscribe((id) => {...});
-app.ports.noInteractionTokenChange.send(...);
+app.ports.listenId.send(...);
   \end{minted}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Caratteristiche e Trade-Off}
+  \begin{itemize}
+    \item Runtime safety maggiore dei concorrenti
+    \item Performance e asset size competitivi
+    \item Architettura semplice ma potente
+    \item Web Platform poco supportata
+    \item No FFI
+    \item Impossibilità di incapsulare lo stato
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Conclusioni}
+  Elm offre trade-off di nicchia, che lo hanno reso una scelta poco popolare rispetto ai grandi framework basati direttamente su JavaScript/TypeScript.\\
+
+  Ciò nonostante, ha avuto influenze significative su altri strumenti, specialmente la Elm Architecture, che ha ispirato librerie come Redux, la soluzione più usata per la gestione dello stato in React per molto tempo e ancora oggi una delle più utilizzate. Ha inoltre contribuito al movimento complessivo verso linguaggi tipati staticamente anche nell'ambito frontend, dove per molto tempo la correttezza dei programmi non è stata considerata una priorità.
+\end{frame}
+
+\begin{frame}[plain]
+  \vfill
+  \centering
+  \Huge Grazie dell'attenzione
+  \vfill
 \end{frame}
 
 \end{document}
