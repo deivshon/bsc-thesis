@@ -83,8 +83,8 @@
     \includegraphics[height=100pt]{assets/elm-logo.png}
   \end{figure}
   \begin{itemize}
-      \item Nessun errore a runtime in pratica
-      \item Predicibilità
+      \item Errori a runtime estremamente rari
+      \item Prevedibilità
       \item Semplice da usare e imparare
   \end{itemize}
 \end{frame}
@@ -113,11 +113,7 @@ update : Msg -> Model -> Model
   \frametitle{Architettura senza componenti}
   La Elm Architecture non supporta componenti dotato di stato locale.\\
 
-  Questo implica la necessità di centralizzare lo stato dell'applicazione:
-  \vspace{3pt}
-  \begin{itemize}
-    \item Il \texttt{Model} deve avere accesso a ogni parte dello stato, indipendentemente dalla posizione nel tree in cui questo viene effettivamente usato.
-  \end{itemize}
+  Il \texttt{Model} deve avere accesso a ogni parte dello stato, indipendentemente dalla posizione nel tree in cui questo viene effettivamente usato.
 \end{frame}
 
 \begin{frame}
@@ -177,13 +173,6 @@ app.ports.listenId.send(...);
     \item No FFI
     \item Impossibilità di incapsulare lo stato
   \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Conclusioni}
-  Elm offre trade-off di nicchia, che lo hanno reso una scelta poco popolare rispetto ai grandi framework basati direttamente su JavaScript/TypeScript.\\
-
-  Ciò nonostante, ha avuto influenze significative su altri strumenti, specialmente la Elm Architecture, che ha ispirato librerie come Redux, la soluzione più usata per la gestione dello stato in React per molto tempo e ancora oggi una delle più utilizzate. Ha inoltre contribuito al movimento complessivo verso linguaggi tipati staticamente anche nell'ambito frontend, dove per molto tempo la correttezza dei programmi non è stata considerata una priorità.
 \end{frame}
 
 \begin{frame}[plain]
