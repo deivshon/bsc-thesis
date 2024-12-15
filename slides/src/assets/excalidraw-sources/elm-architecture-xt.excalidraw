@@ -186,8 +186,8 @@
                 "type": 3
             },
             "seed": 1963851126,
-            "version": 104,
-            "versionNonce": 826195306,
+            "version": 108,
+            "versionNonce": 1867477026,
             "isDeleted": false,
             "boundElements": [
                 {
@@ -211,7 +211,7 @@
                     "type": "arrow"
                 }
             ],
-            "updated": 1733591082696,
+            "updated": 1734284944430,
             "link": null,
             "locked": false
         },
@@ -603,8 +603,8 @@
                 "type": 3
             },
             "seed": 1991031030,
-            "version": 151,
-            "versionNonce": 1509314614,
+            "version": 153,
+            "versionNonce": 62429950,
             "isDeleted": false,
             "boundElements": [
                 {
@@ -616,7 +616,7 @@
                     "type": "arrow"
                 }
             ],
-            "updated": 1733590999407,
+            "updated": 1734284944431,
             "link": null,
             "locked": false
         },
@@ -806,7 +806,7 @@
             "backgroundColor": "transparent",
             "fillStyle": "solid",
             "strokeWidth": 2,
-            "strokeStyle": "solid",
+            "strokeStyle": "dashed",
             "roughness": 0,
             "opacity": 100,
             "groupIds": [],
@@ -816,11 +816,11 @@
                 "type": 2
             },
             "seed": 864355958,
-            "version": 355,
-            "versionNonce": 324031274,
+            "version": 356,
+            "versionNonce": 1923960610,
             "isDeleted": false,
             "boundElements": [],
-            "updated": 1733590879502,
+            "updated": 1734284948604,
             "link": null,
             "locked": false,
             "points": [
@@ -984,7 +984,7 @@
             "backgroundColor": "transparent",
             "fillStyle": "solid",
             "strokeWidth": 2,
-            "strokeStyle": "solid",
+            "strokeStyle": "dashed",
             "roughness": 0,
             "opacity": 100,
             "groupIds": [],
@@ -994,11 +994,11 @@
                 "type": 2
             },
             "seed": 1204982454,
-            "version": 99,
-            "versionNonce": 1057400853,
+            "version": 100,
+            "versionNonce": 966356642,
             "isDeleted": false,
             "boundElements": [],
-            "updated": 1733591516457,
+            "updated": 1734284959005,
             "link": null,
             "locked": false,
             "points": [
